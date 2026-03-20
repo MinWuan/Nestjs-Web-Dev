@@ -1,0 +1,63 @@
+# ===================================
+# Stage 1: Builder (Cài tất cả để Build)
+# ===================================
+# FROM node:22-bookworm-slim AS builder
+FROM oven/bun:latest AS builder
+
+WORKDIR /app
+
+# COPY package.json package-lock.json ./
+COPY package.json bun.lock ./
+
+# RUN --mount=type=cache,id=npm_cache,target=/root/.npm \
+#     npm ci
+RUN bun install --frozen-lockfile
+
+COPY . .
+
+# RUN npm run build
+RUN bun run bun:build
+
+# ===================================
+# Stage 2: Pruner (Bước đệm quan trọng)
+# ===================================
+# Bước này chỉ dùng để lọc ra node_modules sạch cho Production
+# FROM node:22-bookworm-slim AS pruner
+FROM oven/bun:latest AS pruner
+
+WORKDIR /app
+
+# COPY package.json package-lock.json ./
+COPY package.json bun.lock ./
+
+# Chỉ cài dependencies (bỏ qua devDependencies)
+# RUN --mount=type=cache,id=npm_cache,target=/root/.npm \
+#     npm ci --omit=dev
+RUN bun install --frozen-lockfile --production
+
+# ===================================
+# Stage 3: Production Runner
+# ===================================
+FROM node:22-bookworm-slim AS production
+ENV NODE_ENV=production
+WORKDIR /app
+
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/bash -m nestjs && \
+    mkdir -p graphql && \
+    chown -R nestjs:nodejs /app 
+
+COPY --from=pruner /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
+COPY --from=builder --chown=nestjs:nodejs /app/.env.production ./.env.production
+
+USER nestjs
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:8888').then(r => {if(r.status !== 200) process.exit(1)}).catch(() => process.exit(1))"
+
+CMD ["node", "--env-file=.env.production", "dist/main.js"]
+# docker build -f Dockerfile.node --no-cache -t nest-app-node:latest .

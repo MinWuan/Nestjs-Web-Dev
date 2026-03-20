@@ -1,0 +1,180 @@
+name: Build and Deploy NestJS App
+
+# Kích hoạt khi có code push vào nhánh production (hoặc main tùy bạn)
+on:
+  push:
+    branches: ["production"]
+  # Cho phép bấm nút chạy thủ công để test
+  workflow_dispatch:
+
+env:
+  # Tên Image (Dùng biến động để tự lấy username)
+  # REGISTRY: ghcr.io
+  REGISTRY: registry.minwandev.io.vn
+  IMAGE_NAME: minwan/nestjs-web-dev
+  SERVICE_NAME: web_dev_nestjs_app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Không cần permissions packages: write nữa vì dùng Registry ngoài
+      # packages: write # Cấp quyền ghi vào GHCR
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # -----------------------------
+      # Generate a timestamp tag for the current commit
+      - name: Generate Timestamp Tag
+        id: vars
+        # Lưu ý: Docker tag không hỗ trợ khoảng trắng, dấu hai chấm (:) hay gạch chéo (/)
+        # Do đó, thời gian sẽ được format thành dd-mm-yyyy-HH-MM-SS (Giờ Việt Nam)
+        run: echo "IMAGE_TAG=$(TZ='Asia/Ho_Chi_Minh' date +'V%Y.%m.%d_%H%M%S')" >> $GITHUB_ENV
+      # -----------------------------
+      # Tạo file .env.production từ Secret
+      - name: Create .env.production file
+        run: echo "${{ secrets.ENV_PRODUCTION }}" > ./frontend/.env.production
+      # -----------------------------
+
+      # 1. Đăng nhập vào GHCR (Dùng GITHUB_TOKEN có sẵn)
+      # - name: Log in to the GHCR registry
+      #   uses: docker/login-action@v3
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 1. Đăng nhập vào Registry của bạn
+      - name: Log in to Private Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }} # Secret mới
+          password: ${{ secrets.REGISTRY_PASSWORD }} # Secret mới
+
+      # 2. Setup Docker Buildx (Để cache build nhanh hơn)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Build và Push Image lên Registry
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: . # Chỉ định rõ vào thư mục 
+          file: ./Dockerfile.bun # Chỉ rõ đường dẫn file Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          #  ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          # Kỹ thuật Cache nâng cao: Giúp lần build sau siêu nhanh
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+    outputs:
+      new_tag: ${{ env.IMAGE_TAG }}
+
+  deploy-to-vps:
+    needs: build-and-push # Chờ bước trên xong mới chạy
+    runs-on: ubuntu-latest
+
+    steps:
+      # - name: Check IP Resolution
+      #   run: |
+      #     echo "Testing connection to HOST..."
+      #     # Lệnh này sẽ hiện IP mà GitHub đang cố kết nối (để xem có phải là IP Cloudflare không)
+      #     ping -c 3 ${{ secrets.HOST }} || true
+
+      # - name: Test Port 22 via Netcat
+      #   run: |
+      #     echo "Checking Port 22..."
+      #     # Lệnh này kiểm tra xem cổng 22 có mở không (-v: verbose, -z: scan only)
+      #     nc -zv ${{ secrets.HOST }} 22 || true
+
+      - name: SSH into VPS and Deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          #password: ${{ secrets.PASSWORD }}
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          timeout: 30s
+          envs: REGISTRY,IMAGE_NAME,SERVICE_NAME
+          script: |
+            # Lấy Tag mới từ Job trước (do github action env không truyền trực tiếp qua SSH được dễ dàng nên ta gán lại)
+            NEW_TAG=${{ needs.build-and-push.outputs.new_tag }}
+            FULL_NEW_IMAGE="$REGISTRY/$IMAGE_NAME:$NEW_TAG"
+
+            echo ">>>>> 🔍 PRE-CHECK: Getting current running image... <<<<<"
+            # LẤY IMAGE CŨ ĐANG CHẠY (QUAN TRỌNG)
+            # Lệnh này hỏi Swarm xem service đang dùng ảnh nào.
+            PREV_IMAGE=$(docker service inspect $SERVICE_NAME --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}' 2>/dev/null || echo "")
+            
+            # Cắt bỏ phần @sha256... nếu có (để lấy tên tag thuần)
+            PREV_IMAGE=${PREV_IMAGE%@*}
+
+            echo "   - 📌 Old Image: $PREV_IMAGE"
+            echo "   - 🆕 New Image: $FULL_NEW_IMAGE"
+
+            # Login Docker
+            echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login $REGISTRY -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+            echo ">>>>> 📥 PULLING IMAGE EXPLICITLY <<<<<"
+            # Pull thủ công để Docker lưu lại Tag local
+            docker pull $FULL_NEW_IMAGE
+
+            # Update Service sang Tag mới
+            echo ">>>>> 🚀 UPDATING SERVICE TO: $NEW_TAG <<<<<"
+            docker service update \
+              --image $FULL_NEW_IMAGE \
+              --with-registry-auth \
+              $SERVICE_NAME
+
+            # 4. Healthcheck (Giữ nguyên logic cũ của bạn)
+            echo ">>>>> 🏥 VERIFYING DEPLOYMENT STATUS... <<<<<"
+            MAX_RETRIES=5
+            COUNTER=0
+            SUCCESS=false
+
+            while [ $COUNTER -lt $MAX_RETRIES ]; do
+              REPLICAS=$(docker service ls --filter name=$SERVICE_NAME --format "{{.Replicas}}")
+              echo "⏳ Attempt $(($COUNTER+1))/$MAX_RETRIES: Current Replicas = $REPLICAS"
+              
+              if [[ "$REPLICAS" == "1/1" ]]; then
+                SUCCESS=true
+                break
+              fi
+              sleep 2
+              let COUNTER=COUNTER+1
+            done
+
+            if [ "$SUCCESS" = true ]; then
+                echo "✅ DEPLOYMENT SUCCESSFUL!"
+
+                if [ -n "$PREV_IMAGE" ] && [ "$PREV_IMAGE" != "$FULL_NEW_IMAGE" ]; then
+                   echo ">>>>> 🗑️ TRYING TO DELETE OLD TAG: $PREV_IMAGE <<<<<"
+                   docker rmi -f $PREV_IMAGE || true
+                fi
+                
+                # Bước này sẽ hốt trọn ổ những image bị mất tên như trường hợp của bạn
+                echo ">>>>> 🧹 PRUNING DANGLING IMAGES (<none>) <<<<<"
+                docker image prune -f
+
+                exit 0
+            else
+                echo "❌ DEPLOYMENT FAILED!"
+                docker service ps --no-trunc $SERVICE_NAME | head -n 10
+                
+                # NẾU CÓ ẢNH CŨ THÌ ROLLBACK NGAY
+                if [ -n "$PREV_IMAGE" ]; then
+                    echo ">>>>> 🔙 ROLLING BACK TO: $PREV_IMAGE <<<<<"
+                    docker service update --image $PREV_IMAGE $SERVICE_NAME
+                    echo "✅ Rollback command sent."
+                fi
+
+                exit 1
+            fi
+
+

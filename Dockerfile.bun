@@ -1,0 +1,68 @@
+# ===================================
+# Stage 1: Builder (Cài tất cả để Build)
+# ===================================
+FROM oven/bun:latest AS builder
+WORKDIR /app
+
+# Copy file quản lý gói
+COPY package.json bun.lock ./
+
+# Cài đặt tất cả dependencies (bao gồm devDependencies như @nestjs/cli, @swc/core...)
+RUN --mount=type=cache,id=bun_cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build dự án (Sử dụng SWC đã cấu hình)
+RUN bun run bun:build
+
+# ===================================
+# Stage 2: Pruner (Bộ lọc dependencies)
+# ===================================
+# Stage này cài lại từ đầu nhưng chỉ lấy production dependencies
+FROM oven/bun:latest AS pruner
+WORKDIR /app
+
+COPY package.json bun.lock ./
+
+# --production: Chỉ cài dependencies cần thiết để chạy app, bỏ qua devDependencies
+# Giúp giảm số lượng file từ hàng chục ngàn xuống vài ngàn -> Copy siêu nhanh
+RUN --mount=type=cache,id=bun_cache,target=/root/.bun/install/cache \
+    bun install --frozen-lockfile --production
+
+# ===================================
+# Stage 3: Production Runner
+# ===================================
+FROM oven/bun:latest AS production
+
+# Set Environment
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Tạo user (Giữ nguyên logic ID 1001 như file Node để đồng bộ quyền hạn nếu cần)
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/bash -m nestjs && \
+    mkdir -p graphql && \
+    chown -R nestjs:nodejs /app
+
+# --- COPY TỐI ƯU ---
+# 1. Lấy node_modules "sạch" từ Pruner (Nhẹ, ít file -> Copy nhanh)
+COPY --from=pruner /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/package.json ./
+COPY --from=builder --chown=nestjs:nodejs /app/.env.production ./.env.production
+
+# Switch user
+USER nestjs
+
+# Expose port (Bun service)
+EXPOSE 3001
+
+HEALTHCHECK --interval=5s --timeout=3s --start-period=5s --retries=3 \
+  CMD bun -e "fetch('http://127.0.0.1:8888').then(r => process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))"
+
+# Start Application
+CMD ["bun", "run", "--env-file=.env.production", "dist/main.js"]
+# docker build -f Dockerfile.bun --no-cache -t nest-app-bun:latest .

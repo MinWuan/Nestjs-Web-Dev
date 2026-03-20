@@ -1,0 +1,10 @@
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+
+@ObjectType()
+export class UpdateUsersReturns {
+  @Field(() => Int, { nullable: true })
+  modifiedCount: number;
+
+  @Field(() => Int, { nullable: true })
+  matchedCount: number;
+}

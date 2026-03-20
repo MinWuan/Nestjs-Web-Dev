@@ -1,0 +1,8 @@
+node_modules
+dist
+test
+graphql
+scripts
+
+# Allow .env.production to be copied
+!.env.production

@@ -1,0 +1,5 @@
+# bunfig.toml
+
+[install]
+# Dấu sao (*) nghĩa là: Tin tưởng TẤT CẢ, không cần hỏi nữa!
+trustedDependencies = ["*"]
