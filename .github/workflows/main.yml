@@ -125,28 +125,31 @@ jobs:
             # Pull thủ công để Docker lưu lại Tag local
             docker pull $FULL_NEW_IMAGE
 
-            # Update Service sang Tag mới
+            # Update với --detach=true (Để script chạy tiếp xuống vòng lặp check)
             echo ">>>>> 🚀 UPDATING SERVICE TO: $NEW_TAG <<<<<"
             docker service update \
               --image $FULL_NEW_IMAGE \
               --with-registry-auth \
+              --detach=true \
               $SERVICE_NAME
 
-            # 4. Healthcheck (Giữ nguyên logic cũ của bạn)
-            echo ">>>>> 🏥 VERIFYING DEPLOYMENT STATUS... <<<<<"
-            MAX_RETRIES=5
+            echo ">>>>> 🏥 VERIFYING DEPLOYMENT STATUS (Timeout: 60s) <<<<<"
+            MAX_RETRIES=10 # 10 lần * 3 giây = 30 giây
             COUNTER=0
             SUCCESS=false
 
             while [ $COUNTER -lt $MAX_RETRIES ]; do
-              REPLICAS=$(docker service ls --filter name=$SERVICE_NAME --format "{{.Replicas}}")
-              echo "⏳ Attempt $(($COUNTER+1))/$MAX_RETRIES: Current Replicas = $REPLICAS"
+              # Lấy số lượng replica đang thực sự "Running"
+              CURRENT_REPLICAS=$(docker service ls --filter name=$SERVICE_NAME --format "{{.Replicas}}")
+              echo "⏳ Attempt $(($COUNTER+1))/$MAX_RETRIES: Status = $CURRENT_REPLICAS"
               
-              if [[ "$REPLICAS" == "1/1" ]]; then
+              if [[ "$CURRENT_REPLICAS" == "1/1" ]]; then
                 SUCCESS=true
                 break
               fi
-              sleep 2
+              
+              # Nếu thấy trạng thái bị Rollback hoặc đứng im quá lâu, có thể check ps
+              sleep 3
               let COUNTER=COUNTER+1
             done
 
