@@ -39,7 +39,10 @@ export class EncryptionInterceptor implements NestInterceptor {
           req.body = decryptJSON(req.body);
         } catch (err) {
           //logError('DecryptRequest', '❌ Giải mã request thất bại:', err);
-          throw new RestAppException('Dữ liệu đầu vào không hợp lệ', 'DECRYPTION_FAILED');
+          throw new RestAppException({
+            errorCode: 'DECRYPTION_FAILED',
+            message: 'Dữ liệu đầu vào không hợp lệ',
+          });
         }
       }
     }
@@ -57,7 +60,10 @@ export class EncryptionInterceptor implements NestInterceptor {
             return encrypted;
           } catch (err) {
             //logError('EncryptResponse', '❌ Mã hoá response thất bại:', err);
-            throw new RestAppException('Đã xảy ra lỗi', 'ENCRYPTION_FAILED');
+            throw new RestAppException({
+              errorCode: 'ENCRYPTION_FAILED',
+              message: 'Đã xảy ra lỗi',
+            });
           }
         }
 

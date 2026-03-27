@@ -13,10 +13,10 @@ export class UpdateS3sArgs {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty({ each: true })
-  ids: string[];
+  ids!: string[];
 
   @Field(() => UpdateS3Data)
   @ValidateNested()
   @Type(() => UpdateS3Data)
-  data: UpdateS3Data;
+  data!: UpdateS3Data;
 }

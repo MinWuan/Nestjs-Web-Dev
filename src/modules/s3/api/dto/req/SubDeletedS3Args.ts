@@ -5,5 +5,5 @@ import {} from 'class-transformer';
 @InputType()
 export class SubDeletedS3Args {
   @Field(() => String)
-  deviceId: string;
+  deviceId!: string;
 }

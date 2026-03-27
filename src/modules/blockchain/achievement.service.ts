@@ -188,12 +188,12 @@ const CERT_TYPE_NAMES: Record<CertType, string> = {
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class DolphintutorAchievementService implements OnModuleInit {
-  private provider: JsonRpcProvider;
-  private wallet: Wallet;
-  private contract: Contract;
-  private chainId: number;
-  private network: string;
+export class AchievementService implements OnModuleInit {
+  private provider!: JsonRpcProvider;
+  private wallet!: Wallet;
+  private contract!: Contract;
+  private chainId!: number;
+  private network!: string;
 
   constructor(
     private readonly logger: AppLogger,
@@ -230,9 +230,9 @@ export class DolphintutorAchievementService implements OnModuleInit {
   // ─── Public: Issue The Grind ──────────────────────────────────────────────
 
   async issueGrind(input: IssueGrindInput): Promise<AchievementIssuedResult> {
-    this.logger.log(
-      `📤 issueGrind | learner=${input.learnerAddress} | ${input.studyHours}h | ${input.periodLabel}`,
-    );
+    // this.logger.log(
+    //   `📤 issueGrind | learner=${input.learnerAddress} | ${input.studyHours}h | ${input.periodLabel}`,
+    // );
 
     const tx = await this.contract.issueGrind(
       input.learnerAddress,
@@ -242,7 +242,13 @@ export class DolphintutorAchievementService implements OnModuleInit {
       input.periodLabel,
       BigInt(input.studyHours),
       BigInt(input.rank ?? 0),
-    );
+    ).catch((error) => {
+      this.logger.error({
+        message: `❌ issueGrind failed`,
+        trace: error,
+      });
+      throw error;
+    });
 
     const receipt = await this._waitAndLog(tx, 'issueGrind');
     const event = this._parseEvent(receipt);
@@ -263,11 +269,11 @@ export class DolphintutorAchievementService implements OnModuleInit {
         studyHours: input.studyHours,
         rank: input.rank ?? 0,
       },
-    };
+    }
 
-    this.logger.log(
-      `✅ issueGrind success | tokenId=${result.tokenId} | certId=${result.certId}`,
-    );
+    // this.logger.log(
+    //   `✅ issueGrind success | tokenId=${result.tokenId} | certId=${result.certId}`,
+    // );
     return result;
   }
 

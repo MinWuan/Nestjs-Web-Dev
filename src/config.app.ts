@@ -1,5 +1,6 @@
 const SERVER_PORT = 3000;
 const SERVER_HOST = 'localhost';
+import type { StringValue } from 'ms';
 
 class Config {
   public NODE_ENV: string;
@@ -8,7 +9,7 @@ class Config {
   public HOST: string;
 
   public CLIENT_URL: string;
-  public CLIENT_URL2: string
+  public CLIENT_URL2: string;
   public CLIENT_URL3: string;
   public CLIENT_URL4: string;
 
@@ -20,14 +21,14 @@ class Config {
   public MONGO_URI: string;
   public MONGO_URI_MAIN: string;
   public JWT_KEY_AUTH: string;
-  public JWT_EXPIRES_AUTH: string;
+  public JWT_EXPIRES_AUTH: StringValue;
 
   public REDIS_HOST: string;
   public REDIS_PORT: number;
   public REDIS_USERNAME: string;
   public REDIS_PASSWORD: string;
 
-  public REDIS_EXPIRES_AUTH: number
+  public REDIS_EXPIRES_AUTH: number;
 
   public COOKIE_NAME_AUTH: string;
   public COOKIE_EXPIRES_IN: number;
@@ -43,13 +44,15 @@ class Config {
     this.CLIENT_URL3 = process.env.CLIENT_URL3 || '';
     this.CLIENT_URL4 = process.env.CLIENT_URL4 || '';
 
-    this.PRIVATE_KEY_WALLET = process.env.PRIVATE_KEY_WALLET || 'private-key-wallet';
-    this.SINATURE_KEY = process.env.SINATURE_KEY || "signature-key";
-    this.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "encryption-key";
-    this.ENCRYPTION_IV = process.env.ENCRYPTION_IV || "encryption-iv";
+    this.PRIVATE_KEY_WALLET =
+      process.env.PRIVATE_KEY_WALLET || 'private-key-wallet';
+    this.SINATURE_KEY = process.env.SINATURE_KEY || 'signature-key';
+    this.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'encryption-key';
+    this.ENCRYPTION_IV = process.env.ENCRYPTION_IV || 'encryption-iv';
 
     this.MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/nest';
-    this.MONGO_URI_MAIN = process.env.MONGO_URI_MAIN || 'mongodb://localhost:27017/web_dev';
+    this.MONGO_URI_MAIN =
+      process.env.MONGO_URI_MAIN || 'mongodb://localhost:27017/web_dev';
     this.REDIS_HOST = process.env.REDIS_HOST || 'localhost';
     this.REDIS_PORT = +(process.env.REDIS_PORT || 6379);
     this.REDIS_USERNAME = process.env.REDIS_USERNAME || 'admin';
@@ -58,7 +61,8 @@ class Config {
     this.REDIS_EXPIRES_AUTH = Number(process.env.REDIS_EXPIRES_AUTH) || 86400; // 1 day (seconds)
 
     this.JWT_KEY_AUTH = process.env.JWT_KEY_AUTH || 'secret-key-auth';
-    this.JWT_EXPIRES_AUTH = process.env.JWT_EXPIRES_AUTH || '1h';
+    this.JWT_EXPIRES_AUTH =
+      (process.env.JWT_EXPIRES_AUTH as StringValue) || '1d';
 
     this.COOKIE_NAME_AUTH = process.env.COOKIE_NAME_AUTH || 'session';
     this.COOKIE_EXPIRES_IN = Number(process.env.COOKIE_EXPIRES_IN) || 86400000; // 1 day (miliseconds)

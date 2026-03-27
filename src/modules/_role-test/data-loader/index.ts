@@ -11,7 +11,7 @@ export class RoleTestDataLoaderService {
   public readonly roleTestLoader = new DataLoader<
     { id: string; select: string[] },
     RoleTest
-  >(async (data: { id: string; select: string[] }[]) => {
+  >(async (data:readonly { id: string; select: string[] }[]) => {
     const ids = data.map((k) => k.id);
     const allSelectFields = new Set<string>();
     data.forEach((k) =>

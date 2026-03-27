@@ -13,10 +13,10 @@ export class UpdateRoleTestsArgs {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty({ each: true })
-  ids: string[];
+  ids!: string[];
 
   @Field(() => UpdateRoleTestData)
   @ValidateNested()
   @Type(() => UpdateRoleTestData)
-  data: UpdateRoleTestData;
+  data!: UpdateRoleTestData;
 }

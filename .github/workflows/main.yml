@@ -3,7 +3,7 @@ name: Build and Deploy NestJS App
 # Kích hoạt khi có code push vào nhánh production (hoặc main tùy bạn)
 on:
   push:
-    branches: ["production"]
+    branches: ['production', 'main']
   # Cho phép bấm nút chạy thủ công để test
   workflow_dispatch:
 
@@ -29,14 +29,14 @@ jobs:
       # -----------------------------
       # Generate a timestamp tag for the current commit
       - name: Generate Timestamp Tag
-        id: vars
+        id: vars # Đặt id để có thể dùng output sau này
         # Lưu ý: Docker tag không hỗ trợ khoảng trắng, dấu hai chấm (:) hay gạch chéo (/)
         # Do đó, thời gian sẽ được format thành dd-mm-yyyy-HH-MM-SS (Giờ Việt Nam)
         run: echo "IMAGE_TAG=$(TZ='Asia/Ho_Chi_Minh' date +'V%Y.%m.%d_%H%M%S')" >> $GITHUB_ENV
       # -----------------------------
       # Tạo file .env.production từ Secret
       - name: Create .env.production file
-        run: echo "${{ secrets.ENV_PRODUCTION }}" > ./frontend/.env.production
+        run: echo "${{ secrets.ENV_PRODUCTION }}" > ./.env.production
       # -----------------------------
 
       # 1. Đăng nhập vào GHCR (Dùng GITHUB_TOKEN có sẵn)
@@ -63,7 +63,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: . # Chỉ định rõ vào thư mục 
+          context: . # Chỉ định rõ vào thư mục
           file: ./Dockerfile.bun # Chỉ rõ đường dẫn file Dockerfile
           push: true
           tags: |
@@ -111,7 +111,7 @@ jobs:
             # LẤY IMAGE CŨ ĐANG CHẠY (QUAN TRỌNG)
             # Lệnh này hỏi Swarm xem service đang dùng ảnh nào.
             PREV_IMAGE=$(docker service inspect $SERVICE_NAME --format '{{.Spec.TaskTemplate.ContainerSpec.Image}}' 2>/dev/null || echo "")
-            
+
             # Cắt bỏ phần @sha256... nếu có (để lấy tên tag thuần)
             PREV_IMAGE=${PREV_IMAGE%@*}
 
@@ -176,5 +176,3 @@ jobs:
 
                 exit 1
             fi
-
-

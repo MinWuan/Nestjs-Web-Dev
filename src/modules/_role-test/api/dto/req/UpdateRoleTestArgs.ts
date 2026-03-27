@@ -7,7 +7,7 @@ import { CreateRoleTestArgs } from './CreateRoleTestArgs';
 @InputType()
 export class UpdateRoleTestArgs extends PartialType(CreateRoleTestArgs) {
   @Field(() => String)
-  _id: string;
+  _id!: string;
   //Partial type nên tất cả các field đều là optional
 
   // @Field() // bắt buộc lại không optional ghi đè

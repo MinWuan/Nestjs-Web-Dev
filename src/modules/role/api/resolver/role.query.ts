@@ -48,6 +48,11 @@ export class RoleQueryResolver {
     const role = await this.roleRepository.findById({
       _id: args._id,
       select: selectFields,
+    }).catch((error) => {
+      throw GqlAppException.DatabaseError({
+        message: `Failed to get role with ID ${args._id}`,
+        details: error,
+      });
     });
     //console.log('Fetched getRole: ', role);
     if (!role) {
@@ -75,15 +80,22 @@ export class RoleQueryResolver {
     //console.loginfo, 'data');
     //console.log('getRoles Fields: ', selectFields);
 
-    const data = await this.roleRepository.findAll({
-      page: args?.page,
-      limit: args?.limit,
-      filters: args?.filters,
-      search: args?.search,
-      range: args?.range,
-      sort: args?.sort,
-      select: selectFields,
-    });
+    const data = await this.roleRepository
+      .findAll({
+        page: args?.page,
+        limit: args?.limit,
+        filters: args?.filters,
+        search: args?.search,
+        range: args?.range,
+        sort: args?.sort,
+        select: selectFields,
+      })
+      .catch((error) => {
+        throw GqlAppException.DatabaseError({
+          message: 'Failed to get many roles',
+          details: error,
+        });
+      });
     //console.log('Fetched role', data);
     return data;
   }

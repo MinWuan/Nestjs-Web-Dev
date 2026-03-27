@@ -13,10 +13,10 @@ export class UpdateDemosArgs {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty({ each: true })
-  ids: string[];
+  ids!: string[];
 
   @Field(() => UpdateDemoData)
   @ValidateNested()
   @Type(() => UpdateDemoData)
-  data: UpdateDemoData;
+  data!: UpdateDemoData;
 }

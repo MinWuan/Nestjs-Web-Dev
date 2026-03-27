@@ -10,5 +10,5 @@ export class CreateUsersArgs {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateUserArgs)
-  users: CreateUserArgs[];
+  users!: CreateUserArgs[];
 }

@@ -6,5 +6,5 @@ import {} from 'class-transformer';
 export class GetUserArgs {
   @Field(() => String)
   @IsString()
-  _id: string;
+  _id!: string;
 }

@@ -4,14 +4,14 @@ import { RoleTest } from '../../../entity';
 @ObjectType()
 export class GetRoleTestsReturns {
   @Field(() => [RoleTest])
-  data: RoleTest[];
+  data!: RoleTest[];
 
   @Field(() => Int, { nullable: true })
-  total: number;
+  total!: number;
 
   @Field(() => Int, { nullable: true })
-  page: number;
+  page!: number;
 
   @Field(() => Int, { nullable: true })
-  limit: number;
+  limit!: number;
 }

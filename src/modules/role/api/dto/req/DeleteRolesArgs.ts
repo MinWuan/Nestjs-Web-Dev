@@ -7,5 +7,5 @@ export class DeleteRolesArgs {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty({ each: true })
-  ids: string[];
+  ids!: string[];
 }

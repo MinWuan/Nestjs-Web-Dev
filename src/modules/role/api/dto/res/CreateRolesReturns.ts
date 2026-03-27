@@ -4,11 +4,11 @@ import { Role } from '../../../entity';
 @ObjectType()
 export class CreateRolesReturns {
   @Field(() => [String], { nullable: true })
-  ids: string[];
+  ids!: string[];
 
   @Field(() => Int, { nullable: true })
-  count: number;
+  count!: number;
 
   @Field(() => [Role], { nullable: true })
-  data: Role[];
+  data!: Role[];
 }

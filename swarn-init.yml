@@ -1,0 +1,93 @@
+
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m" # Mỗi file log tối đa 10MB
+    max-file: "3"   # Chỉ giữ lại 3 file gần nhất (Tổng tối đa 30MB log) -> Tránh đầy ổ cứng
+
+services:
+  nestjs_app:
+    image: registry.minwandev.io.vn/minwan/nestjs-web-dev:latest
+    networks:
+      - traefik-swarm
+      #- traefik-public
+    logging: *default-logging
+    # Cấu hình Deploy (Thay thế cho các cờ --replicas, --update-...)
+    deploy:
+      replicas: 1 # Số lượng container chạy
+      # Cấu hình Update (Zero Downtime)
+      update_config:
+        parallelism: 1
+        delay: 0s        # Không cần chờ giữa các lần update
+        order: start-first # Bật cái mới OK rồi mới tắt cái cũ (2/1 --> 1/1)
+        failure_action: rollback # QUAN TRỌNG: Nếu update lỗi, tự động quay về bản cũ ngay lập tức
+        monitor: 5s # Thời gian theo dõi để xác định update thành công hay chưa
+      # Cấu hình Rollback (Khi failure_action kích hoạt)
+      rollback_config:
+        parallelism: 1
+        order: stop-first # Tắt cái lỗi trước rồi mới bật lại cái cũ
+      
+      # Policy khởi động lại
+      restart_policy:
+        condition: any
+        max_attempts: 3
+        window: 60s # Chỉ tính là restart loop nếu nó chết liên tục trong 120s
+
+      labels:
+        # 1. Kích hoạt Traefik
+        - "traefik.enable=true"
+        
+        # 2. Định tuyến Domain và Path
+        - "traefik.http.routers.nestjs-router.rule=Host(`api.minwandev.io.vn`) && (PathPrefix(`/api/v2`) || PathPrefix(`/graphql`))"
+        - "traefik.http.routers.nestjs-router.entrypoints=websecure"
+        - "traefik.http.routers.nestjs-router.tls=true"
+        - "traefik.http.routers.nestjs-router.service=nestjs-service" # Đặt tên service rõ ràng
+        
+        # 3. CHỮA LỖI 504
+        # Nếu không có dòng này, Traefik sẽ chọc vào port 80 và
+        # gây lỗi Timeout
+        - "traefik.http.services.nestjs-service.loadbalancer.server.port=3001"
+
+        # 4. Chỉ định mạng (Phòng trường hợp stack nối nhiều mạng)
+        - "traefik.docker.network=traefik-swarm"
+        # 5. Middleware (Tùy chọn - Dùng lại cái trong dynamic_conf)
+        - "traefik.http.routers.nestjs-router.middlewares=secure-headers@file,common-compress@file"
+         
+
+# Khai báo mạng đã tạo ở bước trước (external: true nghĩa là mạng đã có sẵn)
+networks:
+  traefik-swarm:
+    external: true
+
+# docker service inspect web_dev_nestjs_app | grep traefik
+
+# docker swarm init (Chỉ chạy 1 lần khi tạo swarm)
+# docker network create --driver overlay --attachable nginx-swarm
+# docker network ls
+# docker network connect nginx-swarm nginx_container
+# docker network inspect nginx-swarm
+
+
+# docker swarm join --token <token> <manager-ip>:2377 (Chạy trên các node worker)
+# docker node ls (Xem danh sách các node trong swarm)
+
+
+# docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}" (Xem danh sách các container)
+
+# docker container prune -f (Xóa các container dừng)
+# docker image prune -f (Xóa các image không dùng đến)
+
+# docker stack deploy -c swarn-init.yml web_dev (Triển khai stack)
+# docker stack deploy --with-registry-auth -c swarn-init.yml web_dev (Đẩy auth registry nếu cần)
+# docker stack ls (Xem danh sách các stack)
+# docker service logs -f web_dev_nestjs_app (Xem log của service trong stack)
+# docker stack services web_dev (Xem các service trong stack)
+# docker service ps --no-trunc web_dev_nestjs_app (Xem chi tiết các task của service)
+# docker exec -it <container_id> bash (Kết nối vào container trong swarm)
+
+# docker stack rm web_dev (Xóa stack)
+# docker stack ps web_dev (Xem danh sách các container trong stack)
+# docker service ls (Xem danh sách các service trong swarm)
+# docker service update --with-registry-auth --image <image_mới> <tên_service> (Cập nhật image cho service)
+# docker service ps <tên_service> (Xem chi tiết các task của service)
+# docker service rm web_dev_nestjs_app (Xóa service)

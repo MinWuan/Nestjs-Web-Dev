@@ -21,22 +21,21 @@ export class AppController {
     const payload = {
       // Dữ liệu tuỳ chỉnh nếu cần
     };
-
     const signature = this.jwtService.sign(payload, {
       secret: config.SINATURE_KEY,
       algorithm: 'HS256',
-      audience: 'server',
-      issuer: 'client',
-      subject: 'signature',
+      //audience: 'server',
+      //issuer: 'client',
+      //subject: 'signature',
       expiresIn: '1d', // Thời gian tồn tại của chữ ký
     });
 
     return { 
       signature,
-      message: "Vui lòng copy signature này vào header 'x-signature'" 
+      message: "BUNNNNNN!!!!!!!!!!___ Vui lòng copy signature này vào header 'x-signature'" 
     };
   }
-
+  
   @Get('cache')
   async getCacheInfo() {
     // Chỉ hoạt động trên môi trường phát triển (local)
@@ -107,3 +106,7 @@ export class AppController {
     }
   }
 }
+
+// test comment
+
+// test comment 2

@@ -68,22 +68,22 @@ registerEnumType(DemoSettingsRoleEnum, { name: 'DemoSettingsRoleEnum' });
 export class DemoSettings {
   @Column()
   @Field(() => Boolean, { nullable: true })
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @Column()
   @Field(() => DemoSettingsRoleEnum, { nullable: true })
-  role: DemoSettingsRoleEnum;
+  role!: DemoSettingsRoleEnum;
 }
 
 @ObjectType()
 export class DemoUserInfo {
   @Column()
   @Field(() => String, { nullable: true })
-  name: string;
+  name!: string;
 
   @Column()
   @Field(() => String, { nullable: true })
-  roleId: string;
+  roleId!: string;
 
   @Field(() => RoleTest, { nullable: true })
   @IsOptional()
@@ -99,27 +99,27 @@ export class DemoUserInfo {
 export class Demo {
   @ObjectIdColumn()
   @Field(() => ID)
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Column()
   @Field(() => String, { nullable: true })
-  fullName: string;
+  fullName!: string;
 
   @Column()
   @Field(() => Number, { nullable: true })
-  age: number;
+  age!: number;
 
   @Column({ type: 'text' })
   @Field(() => String, { nullable: true })
-  address: string
+  address!: string
 
   @Column()
   @Field(() => String, { nullable: true })
-  email: string;
+  email!: string;
 
   @Column()
   @Field(() => String, { nullable: true })
-  phone: string;
+  phone!: string;
 
   @Column({ type: 'json' })
   @Field(() => DemoSettings, { nullable: true })
@@ -131,7 +131,7 @@ export class Demo {
 
   @Column()
   @Field(() => String, { nullable: true })
-  roleId: string;
+  roleId!: string;
 
   @Column()
   @Field(() => RoleTest, { nullable: true })
@@ -151,11 +151,11 @@ export class Demo {
 
   @Column()
   @Field(() => Date, { nullable: true })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column()
   @Field(() => Date, { nullable: true })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 //InputType ----------------------------------------------------------------
 
@@ -163,23 +163,23 @@ export class Demo {
 export class DemoSettingsInput {
   @Field()
   @IsBoolean()
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @Field(() => DemoSettingsRoleEnum)
   @IsEnum(DemoSettingsRoleEnum)
-  role: DemoSettingsRoleEnum;
+  role!: DemoSettingsRoleEnum;
 }
 
 @InputType()
 export class DemoUserInfoInput {
   @Field()
   @IsString()
-  name: string;
+  name!: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
   @IsString()
-  roleId: string;
+  roleId!: string;
 }
 
 @InputType()
@@ -189,27 +189,27 @@ export class DemoInput {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  fullName: string;
+  fullName!: string;
 
   @Field()
   @IsInt()
   @Min(0)
   @Max(150)
-  age: number;
+  age!: number;
 
   @Field({ nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  address: string = '';
+  address!: string;
 
   @Field()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @Field()
   @IsPhoneNumber('VN')
-  phone: string;
+  phone!: string;
 
   @Field(() => DemoSettingsInput, { nullable: true })
   @IsOptional()
@@ -227,7 +227,7 @@ export class DemoInput {
   @Field()
   @IsOptional()
   @IsString()
-  roleId: string;
+  roleId!: string;
 
   @Field(() => [String], { nullable: 'itemsAndList' })
   @IsOptional()

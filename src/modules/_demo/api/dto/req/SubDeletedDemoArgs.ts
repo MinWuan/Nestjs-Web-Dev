@@ -5,5 +5,5 @@ import {} from 'class-transformer';
 @InputType()
 export class SubDeletedDemoArgs {
   @Field(() => String)
-  deviceId: string;
+  deviceId!: string;
 }

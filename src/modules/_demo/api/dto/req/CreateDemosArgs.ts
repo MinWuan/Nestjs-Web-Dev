@@ -10,5 +10,5 @@ export class CreateDemosArgs {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateDemoArgs)
-  demos: CreateDemoArgs[];
+  demos!: CreateDemoArgs[];
 }

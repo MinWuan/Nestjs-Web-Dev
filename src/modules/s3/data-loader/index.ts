@@ -11,7 +11,7 @@ export class S3DataLoaderService {
   public readonly s3Loader = new DataLoader<
     { id: string; select: string[] },
     S3
-  >(async (data: { id: string; select: string[] }[]) => {
+  >(async (data:readonly { id: string; select: string[] }[]) => {
     const ids = data.map((k) => k.id);
     const allSelectFields = new Set<string>();
     data.forEach((k) =>

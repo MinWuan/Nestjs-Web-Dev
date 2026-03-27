@@ -131,15 +131,26 @@ async function main() {
     process.exit(1);
   }
 
-  const targetNameInput = await new Promise((resolve) =>
-    rl.question('Nhập tên module mới (ví dụ: product): ', resolve),
-  );
-  const parentFolder = await new Promise((resolve) =>
-    rl.question(
-      'Nhập thư mục cha (ví dụ: user, để trống nếu nằm ở root modules): ',
-      resolve,
-    ),
-  );
+  let targetNameInput;
+  let parentFolder;
+
+  // Hỗ trợ tham số dòng lệnh: node scripts/clone-module.js <tên_module> [thư_mục_cha]
+  const args = process.argv.slice(2);
+  if (args.length > 0) {
+    targetNameInput = args[0];
+    parentFolder = args[1] || '';
+    console.log(`Nhận được: tên='${targetNameInput}', cha='${parentFolder}'`);
+  } else {
+    targetNameInput = await new Promise((resolve) =>
+      rl.question('Nhập tên module mới (ví dụ: product): ', resolve),
+    );
+    parentFolder = await new Promise((resolve) =>
+      rl.question(
+        'Nhập thư mục cha (ví dụ: user, để trống nếu nằm ở root modules): ',
+        resolve,
+      ),
+    );
+  }
 
   const targetKebab = toKebabCase(targetNameInput);
 

@@ -34,17 +34,25 @@ import { logger } from '@/common/logger/app.logger';
       playground: false, // Tắt playground mặc định
       introspection: true, //cho phép introspection trong production
       debug: false,
-      formatError: (error: GraphQLError): GraphQLFormattedError => {
-        const { message, extensions, path, locations } = error;
+      formatError: (
+        formattedError: GraphQLFormattedError,
+        error: unknown,
+      ): GraphQLFormattedError => {
+        const { message, extensions, path, locations } =
+          formattedError as GraphQLFormattedError & {
+            message: string;
+            extensions?: Record<string, unknown>;
+            path?: ReadonlyArray<string | number>;
+            locations?: Array<{ line: number; column: number }>;
+          };
         logger.error({
           message: `❄️ ➤ 🔴 ${message}`,
           trace: error,
         });
 
-        let code = extensions?.code || 'ERROR';
-        //Từ Apollo Server hoặc custom exception
-        let statusCode = extensions?.statusCode || 400; //Từ custom exception
-        let details = extensions?.details || null; //Từ custom exception
+        let code = (extensions?.code as string) || 'ERROR';
+        let statusCode = (extensions?.statusCode as number) || 400;
+        let details = extensions?.details ?? null;
 
         return {
           message: message,

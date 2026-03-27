@@ -1,32 +1,36 @@
 {
   "compilerOptions": {
+    "strict": true,
     "module": "commonjs",
     "declaration": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo", // Chỉ định lưu vào dist
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",// đổi từ ES6 lên ES2021
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
+    "sourceMap": true,// tạo file sourcemap
+    "outDir": "./dist",// đặt thư mục output
+    "rootDir": "./src",// đặt thư mục root
+    "baseUrl": "./",// đặt thư mục base
+    //"ignoreDeprecations": "5.0",// bỏ qua deprecations
+    "incremental": true,// tạo file incremental
+    "skipLibCheck": true,// bỏ qua kiểm tra lib
+    "strictNullChecks": true,// kiểm tra null và undefined
+    "forceConsistentCasingInFileNames": true,// kiểm tra tên file
+    "noImplicitAny": false,// không cho phép implicit any
+    "strictBindCallApply": false,// kiểm tra bind, call và apply
+    "noFallthroughCasesInSwitch": false,// kiểm tra fallthrough cases trong switch
     "types": ["node", "bun"],// thêm "bun" vào đây
     "esModuleInterop": true,// cho phép sử dụng import/export trong TypeScript
     "moduleResolution": "node", // <--- Đảm bảo TS tìm thư viện theo kiểu Node cho cả Bun
     "resolveJsonModule": true,  // <--- Giúp Bun/Node đọc các file .json trực tiếp
     "isolatedModules": false,   // <--- Quan trọng cho NestJS Decorators
     "paths": {
-      "@/*": ["src/*"], // Đường dẫn tương đối cho các import (alias)
-      "@modules/*": ["src/modules/*"],
+      "@/*": ["./src/*"], // Đường dẫn tương đối cho các import (alias)
+      "@modules/*": ["./src/modules/*"],
     }
   },
-  "include": ["src"],// chỉ bao gồm thư mục src
+  "include": ["src/**/*"],// chỉ bao gồm thư mục src
   "exclude": ["node_modules", "test", "dist","graphql","**/*spec.ts"] 
 }

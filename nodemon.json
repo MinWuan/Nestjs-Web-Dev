@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/nodemon",
+  "watch": ["dist",".env.local"],
+  "ext": "js",
+  "ignore": ["src/**/*.spec.ts", "node_modules", "src"],
+  "exec": "bun run --env-file=.env.local dist/main.js",
+  "verbose": false,
+  "delay": 300
+}

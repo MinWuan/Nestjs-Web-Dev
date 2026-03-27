@@ -8,7 +8,18 @@ description: Kỹ năng tạo module mới, viết entity, xử lý quan hệ (r
 Khi người dùng yêu cầu tạo mới hoặc viết một entity/module theo yêu cầu, bạn CẦN tuân thủ nghiêm ngặt quy trình tổng quát 7 bước dưới đây:
 
 ## 1. Clone Module mới
-- Chạy lệnh terminal `node scripts/clone-module.js` (kèm tham số nếu cần) để clone một module từ template.
+- Chạy lệnh terminal `node scripts/clone-module.js <tên_module> [thư_mục_cha]` để clone một module từ template.
+- Ví dụ: `node scripts/clone-module.js user` để clone module user từ template.
+- Ví dụ: `node scripts/clone-module.js user user-member` để clone module user từ template vào thư mục user-member.
+
+> **QUAN TRỌNG - QUY TẮC BẮT BUỘC:**
+> Nếu script `clone-module.js` thất bại (exit code khác 0, lỗi file not found, lỗi quyền truy cập, hoặc bất kỳ exception nào), bạn **PHẢI DỪNG LẠI NGAY LẬP TỨC**. TUYỆT ĐỐI KHÔNG ĐƯỢC:
+> - Tự tạo thủ công các file/thư mục module
+> - Copy-paste code từ module khác
+> - Sử dụng lệnh khác để tạo module thay thế
+> - Bỏ qua lỗi và tiếp tục các bước tiếp theo
+>
+> Khi script thất bại, báo lỗi cho người dùng và yêu cầu họ khắc phục trước khi tiếp tục. Chỉ khi script clone thành công (exit code 0, thư mục module mới được tạo đầy đủ) mới được phép tiếp tục sang Bước 2.
 
 ## 2. Đăng ký Module
 - Mở file `src/modules/index.ts`.
@@ -18,7 +29,7 @@ Khi người dùng yêu cầu tạo mới hoặc viết một entity/module theo
 - Mở file entity vừa được clone tại `src/modules/<tên-module>/entity/typeorm/index.ts`.
 - **Xoá sạch dữ liệu mẫu** trong file này.
 - Viết entity mới theo đúng định nghĩa yêu cầu của người dùng.
-- **QUAN TRỌNG:** Phải tuân thủ nghiêm ngặt theo các quy tắc trong SKILL tại thư mục `.agents/skills/entity-generator`.
+- **QUAN TRỌNG:** Phải tuân thủ nghiêm ngặt theo các quy tắc trong SKILL tại file `entity-generator.md`.
 
 ## 4. Xử lý Quan hệ (Relations) với Module khác
 Nếu yêu cầu có đề cập đến việc module mới có quan hệ với module khác hiện có:
@@ -31,6 +42,7 @@ Nếu có field quan hệ với một module khác cần được lấy lên (qu
 - **Sử dụng tham số name:** Khai báo trực tiếp tên field bằng thuộc tính `name` trong `@ResolveField` (ví dụ: `@ResolveField(() => Role, { nullable: true, name: 'role' })`).
 - Inject DataLoader Service tương ứng vào constructor cùng với `AppLogger`.
 - Cần đảm bảo Import Module chứa DataLoader ở file `src/modules/<tên-module>/index.ts`.
+- **Lưu ý đối với Class lồng nhau:** Nếu trong class chính có field có kiểu là một class khác và trong class con đó có chứa field cần quan hệ, thì cần tạo thêm một file nữa trong thư mục `resolver`, đặt tên theo tên class con đó + `.field.ts` (ví dụ: `nested-class.field.ts`) để xử lý `ResolveField` tương ứng. Nội dung code bên trong file `.field.ts` của nested class con sẽ có cấu trúc hoàn toàn giống với file của class chính, chỉ khác nhau ở tên class (tên Resolver), kiểu dữ liệu trả về và tham số `@Parent()`.
 
 **Ví dụ mẫu code cho file `.field.ts` (như User có quan hệ với Role):**
 ```typescript

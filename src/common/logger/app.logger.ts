@@ -4,6 +4,10 @@ import { paint, color } from './ansi';
 @Injectable()
 export class AppLogger implements LoggerService {
   private prefix?: string;
+  private readonly ignoredNestContexts = new Set([
+    'RoutesResolver',
+    'RouterExplorer',
+  ]);
 
   setPrefix(prefix: string) {
     this.prefix = prefix;
@@ -55,6 +59,10 @@ export class AppLogger implements LoggerService {
   }
 
   log(message: string, meta?: any) {
+    if (typeof meta === 'string' && this.ignoredNestContexts.has(meta)) {
+      return;
+    }
+
     this.print('INFO', color.brightBlue, message, meta);
   }
 

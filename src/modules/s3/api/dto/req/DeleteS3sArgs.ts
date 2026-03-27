@@ -7,5 +7,5 @@ export class DeleteS3sArgs {
   @IsArray()
   @ArrayMinSize(1)
   @IsNotEmpty({ each: true })
-  ids: string[];
+  ids!: string[];
 }

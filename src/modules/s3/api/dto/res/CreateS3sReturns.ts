@@ -4,11 +4,11 @@ import { S3 } from '../../../entity';
 @ObjectType()
 export class CreateS3sReturns {
   @Field(() => [String], { nullable: true })
-  ids: string[];
+  ids!: string[];
 
   @Field(() => Int, { nullable: true })
-  count: number;
+  count!: number;
 
   @Field(() => [S3], { nullable: true })
-  data: S3[];
+  data!: S3[];
 }

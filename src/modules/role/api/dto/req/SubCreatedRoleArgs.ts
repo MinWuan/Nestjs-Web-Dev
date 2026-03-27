@@ -5,5 +5,5 @@ import {} from 'class-transformer';
 @InputType()
 export class SubCreatedRoleArgs {
   @Field(() => String)
-  deviceId: string;
+  deviceId!: string;
 }

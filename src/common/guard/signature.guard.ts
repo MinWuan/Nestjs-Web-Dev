@@ -29,10 +29,10 @@ export class SignatureGuard implements CanActivate {
       const decoded = await this.jwtService.verifyAsync(signature, {
         secret: config.SINATURE_KEY,
         algorithms: ['HS256'],
-        audience: 'server', // (Token dùng cho ai) phải trùng với cấu hình khi tạo token
-        issuer: 'client', // (Ai phát hành token) phải trùng với cấu hình khi tạo token
+        //audience: 'server', // (Token dùng cho ai) phải trùng với cấu hình khi tạo token
+        //issuer: 'client', // (Ai phát hành token) phải trùng với cấu hình khi tạo token
         ignoreExpiration: false, // không bỏ qua kiểm tra hết hạn
-        subject: 'signature', // (Chủ thể) phải trùng với cấu hình khi tạo token
+        //subject: 'signature', // (Chủ thể) phải trùng với cấu hình khi tạo token
       });
 
       req.signaturePayload = decoded;

@@ -4,8 +4,8 @@ import { User } from '../../../entity';
 @ObjectType()
 export class SubCreatedUserReturns {
   @Field(() => User, { nullable: true })
-  data: User;
+  data!: User;
 
   @Field(() => String, { nullable: true })
-  deviceId: string;
+  deviceId!: string;
 }

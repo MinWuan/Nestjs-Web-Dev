@@ -33,7 +33,7 @@ import {
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 import {
-  DolphintutorAchievementService,
+  AchievementService,
   AchievementIssuedResult,
   PeriodType,
 } from './achievement.service';
@@ -45,32 +45,32 @@ export class IssueGrindDto {
   @IsEthereumAddress({
     message: 'learnerAddress phải là địa chỉ ví Ethereum hợp lệ',
   })
-  learnerAddress: string;
+  learnerAddress!: string;
 
   @IsString()
   @MaxLength(100, { message: 'learnerName tối đa 100 ký tự' })
   @Transform(({ value }) => value?.trim())
-  learnerName: string;
+  learnerName!: string;
 
   @IsEmail({}, { message: 'learnerEmail không hợp lệ' })
   @Transform(({ value }) => value?.trim().toLowerCase())
-  learnerEmail: string;
+  learnerEmail!: string;
 
   @IsEnum(PeriodType, {
     message: 'periodType phải là 0=DAILY 1=WEEKLY 2=MONTHLY 3=CUSTOM',
   })
   @Type(() => Number)// để đảm bảo giá trị được chuyển thành number trước khi validate enum
-  periodType: PeriodType;
+  periodType!: PeriodType;
 
   @IsString()
   @MaxLength(50, { message: 'periodLabel tối đa 50 ký tự' })
   @Transform(({ value }) => value?.trim())
-  periodLabel: string; // VD: "Tháng 03/2026"
+  periodLabel!: string; // VD: "Tháng 03/2026"
 
   @IsInt({ message: 'studyHours phải là số nguyên' })
   @Min(1, { message: 'studyHours phải >= 1' })
   @Type(() => Number)
-  studyHours: number;
+  studyHours!: number;
 
   @IsOptional()
   @IsInt({ message: 'rank phải là số nguyên' })
@@ -83,48 +83,48 @@ export class IssueUnbrokenDto {
   @IsEthereumAddress({
     message: 'learnerAddress phải là địa chỉ ví Ethereum hợp lệ',
   })
-  learnerAddress: string;
+  learnerAddress!: string;
 
   @IsString()
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
-  learnerName: string;
+  learnerName!: string;
 
   @IsEmail({}, { message: 'learnerEmail không hợp lệ' })
   @Transform(({ value }) => value?.trim().toLowerCase())
-  learnerEmail: string;
+  learnerEmail!: string;
 
   @IsDateString({}, { message: 'startDate phải là ISO 8601, VD: 2026-03-01' })
-  startDate: string; // ISO 8601: "2026-03-01"
+  startDate!: string; // ISO 8601: "2026-03-01"
 
   @IsDateString({}, { message: 'endDate phải là ISO 8601, VD: 2026-03-30' })
-  endDate: string;
+  endDate!: string;
 
   @IsInt({ message: 'streakDays phải là số nguyên' })
   @Min(1, { message: 'streakDays phải >= 1' })
   @Type(() => Number)
-  streakDays: number;
+  streakDays!: number;
 }
 
 export class IssueVoyageDto {
   @IsEthereumAddress({
     message: 'learnerAddress phải là địa chỉ ví Ethereum hợp lệ',
   })
-  learnerAddress: string;
+  learnerAddress!: string;
 
   @IsString()
   @MaxLength(100)
   @Transform(({ value }) => value?.trim())
-  learnerName: string;
+  learnerName!: string;
 
   @IsEmail({}, { message: 'learnerEmail không hợp lệ' })
   @Transform(({ value }) => value?.trim().toLowerCase())
-  learnerEmail: string;
+  learnerEmail!: string;
 
   @IsString()
   @MaxLength(200, { message: 'courseName tối đa 200 ký tự' })
   @Transform(({ value }) => value?.trim())
-  courseName: string;
+  courseName!: string;
 
   @IsOptional()
   @IsDateString({}, { message: 'completedAt phải là ISO 8601' })
@@ -148,7 +148,7 @@ export interface ApiResponse<T> {
 @Controller('achievements')
 export class DolphintutorAchievementController {
   constructor(
-    private readonly achievementService: DolphintutorAchievementService,
+    private readonly achievementService: AchievementService,
     private readonly logger: AppLogger,
   ) {}
 

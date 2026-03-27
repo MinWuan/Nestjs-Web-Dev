@@ -8,12 +8,15 @@ import {
 import {
   restValidationPipe,
   graphqlValidationPipe,
+  smartValidationPipe,
+  SmartValidationPipe,
 } from '@/shared/pipes/validation.pipe';
 // import * as cookieParser from 'cookie-parser';
 import cookieParser = require('cookie-parser');
 import { AppLogger } from '@/common/logger/app.logger';
 import { LoggingInterceptor } from '@/common/interceptor/logging.interceptor';
 import { EncryptionInterceptor } from '@/common/interceptor/encryption.interceptor';
+import { ValidationExceptionFilter } from '@/common/exception/ValidationException.filter';
 
 export class RunServer {
   private app: INestApplication;
@@ -43,11 +46,16 @@ export class RunServer {
 
   private globalMiddleware(): void {
     //validation pipe for rest api
-    this.app.useGlobalPipes(restValidationPipe);
-    this.app.useGlobalPipes(graphqlValidationPipe);
+    // this.app.useGlobalPipes(restValidationPipe);
+    // this.app.useGlobalPipes(graphqlValidationPipe);
+    this.app.useGlobalPipes(new SmartValidationPipe());
 
     this.app.useGlobalInterceptors(new EncryptionInterceptor());
-    this.app.useGlobalFilters(new AllExceptionsFilter(), new NotFoundFilter());
+    this.app.useGlobalFilters(
+      //new AllExceptionsFilter(),
+      new ValidationExceptionFilter(),
+      new NotFoundFilter(),
+    );
   }
 
   private standardMiddleware(): void {
@@ -101,9 +109,10 @@ export class RunServer {
   }
 
   private async startHttpServer(): Promise<void> {
+    this.app.enableShutdownHooks(); // Kích hoạt các hook tắt ứng dụng
     //Run http server
     await this.app
-      .listen(config.PORT)
+      .listen(config.PORT, '0.0.0.0')
       .then(() => {
         logger.log('Using environment: ' + config.NODE_ENV);
         logger.log(

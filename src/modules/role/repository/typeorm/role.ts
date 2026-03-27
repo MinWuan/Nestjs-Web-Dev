@@ -12,31 +12,41 @@ import { Role } from '../../entity';
 import { ObjectId } from 'mongodb';
 import * as input from '../types/input';
 import { RoleRepository } from '../types/implement';
+import { AppLogger } from '@/common/logger/app.logger';
 
 @Injectable()
 export class RoleRepositoryTypeorm implements RoleRepository {
   constructor(
     @InjectRepository(Role, DOMAIN.main.name)
     private repo: MongoRepository<Role>,
+    private readonly logger: AppLogger,
   ) {}
 
   // =================================================================
   // CREATE ONE
   // =================================================================
   async create(data: Partial<Role>): Promise<Role> {
-    const role = this.repo.create({
-      ...data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    const savedRole = await this.repo.save(role, {
-      reload: true, // Tự động load lại entity sau khi lưu để có đầy đủ dữ liệu
-      transaction: false, // Tắt transaction để tăng tốc độ
-      chunk: 100, // Chia nhỏ nếu có nhiều dữ liệu
-      data: { ordered: true }, // Dữ liệu có thứ tự
-      listeners: true, // Kích hoạt các listener nếu có
-    });
-    return savedRole;
+    try {
+      const role = this.repo.create({
+        ...data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const savedRole = await this.repo.save(role, {
+        reload: true, // Tự động load lại entity sau khi lưu để có đầy đủ dữ liệu
+        transaction: false, // Tắt transaction để tăng tốc độ
+        chunk: 100, // Chia nhỏ nếu có nhiều dữ liệu
+        data: { ordered: true }, // Dữ liệu có thứ tự
+        listeners: true, // Kích hoạt các listener nếu có
+      });
+      return savedRole;
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 create role`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -46,31 +56,39 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     data: Partial<Role>[],
     options?: SaveOptions,
   ): Promise<{ ids: string[]; count: number; data: Role[] }> {
-    const now = new Date();
+    try {
+      const now = new Date();
 
-    // 1. Map dữ liệu đầu vào thành Entity instances, gán timestamp
-    const entities = data.map((item) =>
-      this.repo.create({
-        ...item,
-        createdAt: now,
-        updatedAt: now,
-      }),
-    );
+      // 1. Map dữ liệu đầu vào thành Entity instances, gán timestamp
+      const entities = data.map((item) =>
+        this.repo.create({
+          ...item,
+          createdAt: now,
+          updatedAt: now,
+        }),
+      );
 
-    // 2. Thực hiện lưu hàng loạt (Bulk Write)
-    // TypeORM save([]) sẽ tự động thực hiện insertMany xuống MongoDB
-    const results = await this.repo.save(entities, {
-      reload: false, // Không cần load lại để tiết kiệm tài nguyên
-      chunk: 500, // Chia nhỏ nếu có nhiều dữ liệu
-      ...options,
-    });
+      // 2. Thực hiện lưu hàng loạt (Bulk Write)
+      // TypeORM save([]) sẽ tự động thực hiện insertMany xuống MongoDB
+      const results = await this.repo.save(entities, {
+        reload: false, // Không cần load lại để tiết kiệm tài nguyên
+        chunk: 500, // Chia nhỏ nếu có nhiều dữ liệu
+        ...options,
+      });
 
-    // 3. Chỉ trả về IDs và Count để tối ưu băng thông/RAM
-    return {
-      ids: results.map((item) => item?._id?.toString()),
-      count: results.length,
-      data: results,
-    };
+      // 3. Chỉ trả về IDs và Count để tối ưu băng thông/RAM
+      return {
+        ids: results.map((item) => item?._id?.toString()),
+        count: results.length,
+        data: results,
+      };
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 create many roles`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -81,20 +99,28 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     data: Partial<Role>,
     options?: SaveOptions,
   ): Promise<Role | null> {
-    const role = await this.repo.findOneBy({ _id: new ObjectId(_id) });
-    if (!role) return null;
+    try {
+      const role = await this.repo.findOneBy({ _id: new ObjectId(_id) });
+      if (!role) return null;
 
-    // Helper: Loại bỏ undefined keys
-    const cleanData = this.cleanPayload(data);
+      // Helper: Loại bỏ undefined keys
+      const cleanData = this.cleanPayload(data);
 
-    // Merge dữ liệu mới vào entity cũ
-    this.repo.merge(role, cleanData);
-    role.updatedAt = new Date();
+      // Merge dữ liệu mới vào entity cũ
+      this.repo.merge(role, cleanData);
+      role.updatedAt = new Date();
 
-    const updatedRole = await this.repo.save(role, {
-      ...options,
-    });
-    return updatedRole;
+      const updatedRole = await this.repo.save(role, {
+        ...options,
+      });
+      return updatedRole;
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 update role`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -105,28 +131,36 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     data: Partial<Role>,
     options?: UpdateOptions,
   ): Promise<{ modifiedCount: number; matchedCount: number }> {
-    const objectIds = ids.map((id) => new ObjectId(id));
+    try {
+      const objectIds = ids.map((id) => new ObjectId(id));
 
-    const cleanData = this.cleanPayload(data);
+      const cleanData = this.cleanPayload(data);
 
-    // Luôn update thời gian
-    const updatePayload = {
-      ...cleanData,
-      updatedAt: new Date(),
-    };
+      // Luôn update thời gian
+      const updatePayload = {
+        ...cleanData,
+        updatedAt: new Date(),
+      };
 
-    const result = await this.repo.updateMany(
-      { _id: { $in: objectIds } },
-      { $set: updatePayload },
-      {
-        ...options,
-      },
-    );
+      const result = await this.repo.updateMany(
+        { _id: { $in: objectIds } },
+        { $set: updatePayload },
+        {
+          ...options,
+        },
+      );
 
-    return {
-      modifiedCount: result.modifiedCount, // Số lượng document thực sự bị thay đổi
-      matchedCount: result.matchedCount, // Số lượng document khớp điều kiện
-    };
+      return {
+        modifiedCount: result.modifiedCount, // Số lượng document thực sự bị thay đổi
+        matchedCount: result.matchedCount, // Số lượng document khớp điều kiện
+      };
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 update many roles`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -135,13 +169,21 @@ export class RoleRepositoryTypeorm implements RoleRepository {
   async delete(
     _id: string,
   ): Promise<{ deletedCount: number; acknowledged: boolean }> {
-    const result = await this.repo.deleteOne({
-      _id: new ObjectId(_id),
-    });
-    return {
-      deletedCount: result.deletedCount, // Số lượng document đã xóa
-      acknowledged: result.acknowledged, // Trạng thái xác nhận từ MongoDB
-    };
+    try {
+      const result = await this.repo.deleteOne({
+        _id: new ObjectId(_id),
+      });
+      return {
+        deletedCount: result.deletedCount, // Số lượng document đã xóa
+        acknowledged: result.acknowledged, // Trạng thái xác nhận từ MongoDB
+      };
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 delete role`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -151,34 +193,50 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     ids: string[],
     options?: DeleteOptions,
   ): Promise<{ deletedCount: number; acknowledged: boolean }> {
-    const objectIds = ids.map((id) => new ObjectId(id));
+    try {
+      const objectIds = ids.map((id) => new ObjectId(id));
 
-    const result = await this.repo.deleteMany(
-      { _id: { $in: objectIds } },
-      {
-        ...options,
-      },
-    );
+      const result = await this.repo.deleteMany(
+        { _id: { $in: objectIds } },
+        {
+          ...options,
+        },
+      );
 
-    return {
-      deletedCount: result.deletedCount, // Số lượng document đã xóa
-      acknowledged: result.acknowledged, // Trạng thái xác nhận từ MongoDB
-    };
+      return {
+        deletedCount: result.deletedCount, // Số lượng document đã xóa
+        acknowledged: result.acknowledged, // Trạng thái xác nhận từ MongoDB
+      };
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 delete many roles`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
   // FIND BY ID
   // =================================================================
   async findById(queryDto: input.findById): Promise<Role | null> {
-    const projection = queryDto.select?.length
-      ? (queryDto.select as (keyof Role)[])
-      : undefined;
+    try {
+      const projection = queryDto.select?.length
+        ? (queryDto.select as (keyof Role)[])
+        : undefined;
 
-    const role = await this.repo.findOne({
-      where: { _id: new ObjectId(queryDto._id) },
-      select: projection,
-    });
-    return role;
+      const role = await this.repo.findOne({
+        where: { _id: new ObjectId(queryDto._id) },
+        select: projection,
+      });
+      return role;
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 find by id role`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 
   // =================================================================
@@ -190,97 +248,107 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     page: number;
     limit: number;
   }> {
-    const {
-      page = 1,
-      limit = 20,
-      filters,
-      search,
-      range,
-      sort,
-      select,
-    } = queryDto;
+    try {
+      const {
+        page = 1,
+        limit = 20,
+        filters,
+        search,
+        range,
+        sort,
+        select,
+      } = queryDto;
 
-    const MAX_LIMIT = 100;
-    const safeLimit = Math.min(limit, MAX_LIMIT);
-    const skip = (page - 1) * safeLimit;
+      const MAX_LIMIT = 100;
+      const safeLimit = Math.min(limit, MAX_LIMIT);
+      const skip = (page - 1) * safeLimit;
 
-    const where: any = {};
+      const where: any = {};
 
-    /* =========================
-     * FILTER CƠ BẢN (field = value)
-     * ========================= */
-    if (filters) {
-      for (const [key, value] of Object.entries(filters)) {
-        if (value !== undefined && value !== null) {
-          where[key] = value;
+      /* =========================
+       * FILTER CƠ BẢN (field = value)
+       * ========================= */
+      if (filters) {
+        for (const [key, value] of Object.entries(filters)) {
+          if (value !== undefined && value !== null) {
+            where[key] = value;
+          }
         }
       }
-    }
 
-    /* =========================
-     * SEARCH TEXT
-     * ========================= */
-    if (search?.keyword && search.fields?.length) {
-      where.$or = search.fields.map((field) => ({
-        [field]: { $regex: search.keyword, $options: 'i' },
-      }));
-    }
+      /* =========================
+       * SEARCH TEXT
+       * ========================= */
+      if (search?.keyword && search.fields?.length) {
+        where.$or = search.fields.map((field) => ({
+          [field]: { $regex: search.keyword, $options: 'i' },
+        }));
+      }
 
-    /* =========================
-     * RANGE FILTER (date, number)
-     * ========================= */
-    if (range) {
-      for (const [field, condition] of Object.entries(range)) {
-        if (!condition) continue;
+      /* =========================
+       * RANGE FILTER (date, number)
+       * ========================= */
+      if (range) {
+        for (const [field, condition] of Object.entries(range)) {
+          if (!condition) continue;
 
-        where[field] = {};
-        if (condition.from !== undefined) {
-          where[field].$gte = condition.from;
-        }
-        if (condition.to !== undefined) {
-          where[field].$lte = condition.to;
+          where[field] = {};
+          if (condition.from !== undefined) {
+            where[field].$gte = condition.from;
+          }
+          if (condition.to !== undefined) {
+            where[field].$lte = condition.to;
+          }
         }
       }
+
+      /* =========================
+       * SORT
+       * ========================= */
+      const order: any = {};
+      if (sort?.field) {
+        order[sort.field as string] = sort.order === 'ASC' ? 1 : -1;
+      } else {
+        order.createdAt = -1; // default
+      }
+
+      /* =========================
+       * SELECT
+       * ========================= */
+
+      const projection = select?.length
+        ? (select as (keyof Role)[])
+        : undefined;
+
+      /* =========================
+       * QUERY
+       * ========================= */
+      const [data, total] = await Promise.all([
+        this.repo.find({
+          where,
+          skip,
+          take: limit,
+          order,
+          select: projection,
+        }),
+        this.repo.count({
+          ...where,
+        }),
+      ]);
+
+      return {
+        data,
+        total,
+        page,
+        limit,
+      };
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 find all roles`,
+        trace: error,
+      });
+      throw error;
     }
-
-    /* =========================
-     * SORT
-     * ========================= */
-    const order: any = {};
-    if (sort?.field) {
-      order[sort.field as string] = sort.order === 'ASC' ? 1 : -1;
-    } else {
-      order.createdAt = -1; // default
-    }
-
-    /* =========================
-     * SELECT
-     * ========================= */
-
-    const projection = select?.length ? (select as (keyof Role)[]) : undefined;
-
-    /* =========================
-     * QUERY
-     * ========================= */
-    const [data, total] = await Promise.all([
-      this.repo.find({
-        where,
-        skip,
-        take: limit,
-        order,
-        select: projection,
-      }),
-      this.repo.count({
-        ...where,
-      }),
-    ]);
-
-    return {
-      data,
-      total,
-      page,
-      limit,
-    };
   }
 
   // =================================================================
@@ -303,12 +371,20 @@ export class RoleRepositoryTypeorm implements RoleRepository {
     ids: string[];
     select?: string[];
   }): Promise<Role[]> {
-    const roles = await this.repo.find({
-      where: {
-        _id: { $in: data.ids.map((id) => new ObjectId(id)) },
-      },
-      select: data?.select?.length ? data.select : undefined,
-    });
-    return roles;
+    try {
+      const roles = await this.repo.find({
+        where: {
+          _id: { $in: data.ids.map((id) => new ObjectId(id)) },
+        },
+        select: data?.select?.length ? data.select : undefined,
+      });
+      return roles;
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 find many by ids role`,
+        trace: error,
+      });
+      throw error;
+    }
   }
 }

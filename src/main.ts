@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { RunServer } from './server.app';
-import { logger } from './common/logger/app.logger';
+import { AppLogger, logger } from './common/logger/app.logger';
 import { ConsoleLogger } from '@nestjs/common';
 
 declare const module: any;
@@ -14,16 +14,14 @@ class Application {
         prefix: 'App',
         timestamp: true,
         colors: true,
-        logLevels: ['log', 'error', 'warn', 'debug', 'verbose'],
+        logLevels: ['log', 'error', 'warn', 'debug', 'verbose','fatal'],
       }),
     });
 
-
-    
-    app.enableShutdownHooks();// Kích hoạt các hook tắt ứng dụng
+    //app.enableShutdownHooks();// Kích hoạt các hook tắt ứng dụng
     const server = new RunServer(app);
     server.start();
-
+    
     // Hot Module Replacement
     if (typeof module !== 'undefined' && module.hot) {
       module.hot.accept();

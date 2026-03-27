@@ -25,7 +25,7 @@ export const RedisProvider: Provider = {
       username: config.REDIS_USERNAME,
       retryStrategy: (times) => {
         // Giới hạn retry để tránh spam log
-        if (times > 3) {
+        if (times > 10) {
           logger.error({ 
             message: `Redis retry limit reached (${times} attempts). Stopping reconnection.` 
           });
@@ -36,7 +36,7 @@ export const RedisProvider: Provider = {
         logger.warn(`Redis retry attempt ${times}, reconnecting in ${delay}ms...`);
         return delay;
       },
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: 10,
       enableReadyCheck: true,
       lazyConnect: false, // Kết nối ngay lập tức
     });

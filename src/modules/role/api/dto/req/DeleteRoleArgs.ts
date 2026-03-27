@@ -5,5 +5,5 @@ import {} from 'class-transformer';
 @InputType()
 export class DeleteRoleArgs {
   @Field(() => String)
-  _id: string;
+  _id!: string;
 }

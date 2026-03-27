@@ -59,19 +59,19 @@ import { Type } from 'class-transformer';
 export class RoleTest {
   @ObjectIdColumn()
   @Field(() => ID)
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Column()
   @Field(() => String, { nullable: true })
-  name: string;
+  name!: string;
 
   @Column()
   @Field(() => String, { nullable: true })
-  description: string;
+  description!: string;
 
   @Column() 
   @Field(() => [String], { nullable: true })
-  permissions: string[];
+  permissions!: string[];
 
   @Column()
   @Field(() => Boolean, { nullable: true })
@@ -79,11 +79,11 @@ export class RoleTest {
 
   @Column()
   @Field(() => Date, { nullable: true })
-  createdAt: Date;
+  createdAt!: Date;
 
   @Column()
   @Field(() => Date, { nullable: true })
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 //InputType ----------------------------------------------------------------
 
@@ -95,7 +95,7 @@ export class RoleTestInput {
   @MinLength(3)
   @MaxLength(50)
   @Index({ unique: true })
-  name: string;
+  name!: string;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -107,7 +107,7 @@ export class RoleTestInput {
   @IsArray()
   @ArrayNotEmpty()
   @IsString({ each: true })
-  permissions: string[];
+  permissions!: string[];
 
   @Field(() => Boolean, { nullable: true })
   @IsBoolean()

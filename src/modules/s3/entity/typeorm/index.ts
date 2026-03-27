@@ -1,4 +1,5 @@
-import { Entity, ObjectIdColumn, Column, ObjectId, Index } from 'typeorm';
+import { Entity, ObjectIdColumn, Column, Index } from 'typeorm';
+import { ObjectId } from 'mongodb';
 import {
   ObjectType,
   Field,
@@ -12,7 +13,6 @@ import {
   IsNumber,
   IsMongoId,
 } from 'class-validator';
-import { User } from '@/modules/user';
 
 // ---------------------------------------------------------------
 // ObjectType
@@ -23,7 +23,7 @@ import { User } from '@/modules/user';
 export class S3 {
   @ObjectIdColumn()
   @Field(() => ID)
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Column()
   @Field({ nullable: true })
@@ -70,17 +70,17 @@ export class S3Input {
   @Field()
   @IsString()
   @IsNotEmpty()
-  key: string;
+  key!: string;
 
   @Field()
   @IsString()
   @IsNotEmpty()
-  url: string;
+  url!: string;
 
   @Field()
   @IsString()
   @IsNotEmpty()
-  mimetype: string;
+  mimetype!: string;
 
   @Field({ nullable: true })
   @IsString()
@@ -95,10 +95,10 @@ export class S3Input {
   @Field()
   @IsString()
   @IsNotEmpty()
-  bucket: string;
+  bucket!: string;
 
   @Field(() => ID)
   @IsMongoId()
   @IsNotEmpty()
-  authorId: ObjectId;
+  authorId!: ObjectId;
 }

@@ -1,99 +1,481 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Project Name
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS GraphQL API với MongoDB, Redis và AWS S3 Integration.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Mô tả ngắn
 
-## Description
+Dự án backend NestJS sử dụng GraphQL API, TypeORM với MongoDB, caching với Redis, authentication JWT, và upload file qua AWS S3.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Tech Stack
 
-## Project setup
+- **Runtime:** Bun / Node.js
+- **Framework:** NestJS 11
+- **Database:** TypeORM + MongoDB
+- **GraphQL:** Apollo Server (@nestjs/graphql)
+- **Auth:** JWT (@nestjs/jwt)
+- **Cache:** Redis (via ioredis)
+- **File Storage:** AWS S3
+- **Blockchain:** Ethers.js (ethers v6)
+- **Validation:** class-validator, class-transformer
 
-```bash
-$ npm install
+## Các Module
+
+### User Module (`src/modules/user/`)
+
+Quản lý người dùng với profile phong phú.
+
+**Entity chính: `User`**
+- Thông tin cơ bản: `fullname`, `email`, `password`, `phone`, `gender`, `birthday`, `bio`, `avatar`
+- Membership: `membershipType` (free/silver/gold/diamond), `membershipExpiredAt`, `coin`
+- Trạng thái: `status`, `type`
+- Social: `listFriendId`, `friendRequestsId`
+- Timestamps: `createdAt`, `updatedAt`
+
+**Sub-entities:**
+- `LocationUser` - Địa chỉ (country, city, ward, address)
+- `ExperiencesUser` - Kinh nghiệm làm việc (title, company, description, location, startDate, endDate, isCurrent)
+- `EducationsUser` - Học vấn (degree, fieldOfStudy, school, location, startDate, endDate)
+- `BadgesUser` - Huy hiệu (name, type, description, iconUrl, awardedAt, expiresAt, awardedBy)
+- `PermissionsUser` - Quyền hạn (name, description, limit) - ví dụ: UPLOAD_FILE
+
+**Relationship:**
+- `id_role` - Liên kết với Role module
+- `permissions[]` - Danh sách quyền riêng của user
+
+### Role Module (`src/modules/role/`)
+
+Quản lý vai trò người dùng.
+
+**Entity chính: `Role`**
+- Enum: `ROOT`, `ADMIN`, `USER`, `GUEST`, `DEV`
+- Mô tả: `description`
+- Timestamps: `createdAt`, `updatedAt`
+
+### S3 Module (`src/modules/s3/`)
+
+Quản lý upload và lưu trữ file trên AWS S3.
+
+**Entity chính: `S3`**
+- File metadata: `key`, `url`, `mimetype`, `originalname`, `size`, `bucket`
+- Liên kết: `authorId` (ObjectId của user upload)
+- Timestamps: `createdAt`, `updatedAt`
+
+### Post Module (`src/modules/post/`)
+
+Quản lý bài viết với nội dung phong phú và hệ thống phản hồi.
+
+**Entity chính: `Post`**
+- Thông tin cơ bản: `slug` (unique), `title`, `description`, `content`
+- Table of Contents: `toc[]` - danh sách tiêu đề phụ (title, id, tag)
+- Media: `thumbnail`, `link` (image[], video[])
+- Phân loại: `category[]`, `tags[]`, `keywords[]`
+- Trạng thái: `status` (DRAFT, PUBLISHED, ARCHIVED, PENDING)
+- Metrics: `view`, `rank`
+- Timestamps: `createdAt`, `updatedAt`
+
+**Sub-entities:**
+- `TocPost` - Mục lục bài viết (title, id, tag)
+- `LinkPost` - Liên kết media (image[], video[])
+- `ReactionsPost` - Phản hồi (listUserId[], type) - ví dụ: heart, unicorn, surprised, clap, fire
+
+**Relationship:**
+- `id_author` → `author` - Liên kết với User module (tác giả bài viết)
+- `id_sharedByListUserId` → `sharedByListUserId[]` - Danh sách user đã chia sẻ bài viết
+
+**Indexes:**
+- `slug` (unique)
+- `slug, createdAt, status`
+- `status, category, createdAt`
+- `status, createdAt`
+
+### Session Module (`src/modules/session/`)
+
+Quản lý phiên làm việc của người dùng.
+
+**Entity chính: `Session`**
+- Session data: `sessionId`, `data`
+- Người dùng: `userId`
+- Trạng thái: `isActive`
+- Timestamps: `createdAt`, `updatedAt`, `expiresAt`
+
+## API Reference (GraphQL)
+
+### User Types
+
+```graphql
+type User {
+  _id: ID!
+  fullname: String
+  email: String
+  status: String
+  phone: String
+  gender: String
+  birthday: DateTime
+  bio: String
+  coin: Float
+  membershipType: String
+  membershipExpiredAt: DateTime
+  location: LocationUser
+  experiences: [ExperiencesUser]
+  educations: [EducationsUser]
+  badges: [BadgesUser]
+  avatar: String
+  type: String
+  id_role: String
+  listFriendId: [String]
+  friendRequestsId: [String]
+  permissions: [PermissionsUser]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type LocationUser {
+  country: String
+  city: String
+  ward: String
+  address: String
+}
+
+type ExperiencesUser {
+  title: String
+  description: String
+  company: String
+  location: LocationExperiencesUser
+  startDate: DateTime
+  endDate: DateTime
+  isCurrent: Boolean
+}
+
+type EducationsUser {
+  degree: String
+  fieldOfStudy: String
+  school: String
+  location: LocationEducationsUser
+  startDate: DateTime
+  endDate: DateTime
+}
+
+type BadgesUser {
+  name: String
+  type: String
+  description: String
+  iconUrl: String
+  awardedAt: DateTime
+  expiresAt: DateTime
+  awardedBy: String
+}
+
+type PermissionsUser {
+  name: String
+  description: String
+  limit: String
+}
 ```
 
-## Compile and run the project
+### Role Types
 
-```bash
-# development
-$ npm run start
+```graphql
+enum RoleEnum {
+  ROOT
+  ADMIN
+  USER
+  GUEST
+  DEV
+}
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+type Role {
+  _id: ID!
+  role: RoleEnum
+  description: String
+  createdAt: DateTime
+  updatedAt: DateTime
+}
 ```
 
-## Run tests
+### S3 Types
 
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```graphql
+type S3 {
+  _id: ID!
+  key: String
+  url: String
+  mimetype: String
+  originalname: String
+  size: Float
+  bucket: String
+  authorId: ID!
+  createdAt: DateTime
+  updatedAt: DateTime
+}
 ```
 
-## Deployment
+### Post Types
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```graphql
+enum statusPost {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  PENDING
+}
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+type TocPost {
+  title: String
+  id: String
+  tag: String
+}
 
-```bash
-$ npm install -g mau
-$ mau deploy
+type LinkPost {
+  image: [String]
+  video: [String]
+}
+
+type ReactionsPost {
+  listUserId: [String]
+  type: String
+}
+
+type Post {
+  _id: ID!
+  slug: String
+  title: String
+  description: String
+  content: String
+  toc: [TocPost]
+  thumbnail: String
+  link: LinkPost
+  category: [String]
+  status: statusPost
+  id_author: String
+  author: User
+  id_sharedByListUserId: [String]
+  sharedByListUserId: [User]
+  view: Int
+  rank: Int
+  tags: [String]
+  keywords: [String]
+  reactions: [ReactionsPost]
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input TocPostInput {
+  title: String!
+  id: String!
+  tag: String!
+}
+
+input LinkPostInput {
+  image: [String]
+  video: [String]
+}
+
+input ReactionsPostInput {
+  listUserId: [String]
+  type: String
+}
+
+input PostInput {
+  slug: String!
+  title: String!
+  description: String
+  content: String!
+  toc: [TocPostInput]
+  thumbnail: String
+  link: LinkPostInput
+  category: [String]
+  status: statusPost!
+  id_author: ID!
+  id_sharedByListUserId: [String]
+  view: Int
+  rank: Int
+  tags: [String]
+  keywords: [String]
+  reactions: [ReactionsPostInput]
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Session Types
 
-## Resources
+```graphql
+type Session {
+  _id: ID!
+  sessionId: String!
+  data: String
+  userId: String!
+  isActive: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+  expiresAt: DateTime
+}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Cấu hình Environment
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+# Database (MongoDB)
+DATABASE_HOST=localhost
+DATABASE_PORT=27017
+DATABASE_NAME=app_db
 
-## Support
+# JWT
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
-## Stay in touch
+# AWS S3
+AWS_ACCESS_KEY_ID=your-access-key
+AWS_SECRET_ACCESS_KEY=your-secret-key
+AWS_S3_BUCKET=bucket-name
+AWS_REGION=us-east-1
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Cài đặt và Chạy
+
+```bash
+# Cài đặt dependencies (sử dụng Bun)
+bun install
+
+# Development (watch mode)
+bun run bun:dev
+
+# Build
+bun run bun:build
+
+# Production
+bun run bun:start:prod
+
+# Tests
+bun test
+bun run test:cov
+```
+
+### Alternative Scripts (npm/node)
+
+```bash
+npm install
+
+# Development
+npm run dev
+
+# Build
+npm run build
+
+# Start Production
+npm run start:prod
+
+# Tests
+npm run test
+npm run test:cov
+```
+
+## Cấu trúc Dự án
+
+```
+src/
+├── modules/
+│   ├── user/
+│   │   └── entity/
+│   │       └── typeorm/
+│   │           ├── index.ts           # User, UserInput
+│   │           ├── locationUser.entity.ts
+│   │           ├── experiencesUser.entity.ts
+│   │           ├── educationsUser.entity.ts
+│   │           ├── badgesUser.entity.ts
+│   │           └── permissionsUser.entity.ts
+│   ├── role/
+│   │   └── entity/
+│   │       └── typeorm/
+│   │           └── index.ts          # Role, RoleInput, RoleEnum
+│   ├── s3/
+│   │   └── entity/
+│   │       └── typeorm/
+│   │           └── index.ts          # S3, S3Input
+│   ├── post/
+│   │   ├── constants/
+│   │   │   └── common.ts             # statusPost enum
+│   │   └── entity/
+│   │       └── typeorm/
+│   │           ├── index.ts          # Post, PostInput
+│   │           ├── tocPost.entity.ts
+│   │           ├── linkPost.entity.ts
+│   │           └── reactionsPost.entity.ts
+│   ├── session/
+│   │   └── entity/
+│   │       └── typeorm/
+│   │           └── index.ts         # Session, SessionInput
+│   └── blockchain/
+├── common/
+│   └── logger/
+│       └── app.logger.ts             # Custom logger
+├── app.controller.ts
+├── app.module.ts
+├── main.ts
+└── server.app.ts
+```
+
+## Dependencies quan trọng
+
+| Package | Version | Mục đích |
+|---------|---------|-----------|
+| @nestjs/graphql | 13.2.0 | GraphQL integration |
+| @nestjs/apollo | 13.2.1 | Apollo Server |
+| @nestjs/typeorm | 11.0.0 | TypeORM integration |
+| typeorm | 0.3.28 | ORM (MongoDB) |
+| mongodb | 6.21.0 | MongoDB driver |
+| @nestjs/jwt | 11.0.2 | JWT authentication |
+| ioredis | 5.5.0 | Redis client |
+| @nestjs/cache-manager | 3.1.0 | Caching |
+| ethers | 6.16.0 | Blockchain utilities |
+| bcryptjs | 3.0.2 | Password hashing |
+| class-validator | 0.14.1 | DTO validation |
+| class-transformer | 0.5.1 | Object transformation |
+
+## Changelog
+
+### [v0.0.2] - 2026-03-24
+
+- Thêm **Post Module** với entities: Post, TocPost, LinkPost, ReactionsPost
+- Thêm **Session Module** với entity: Session
+- Post Module hỗ trợ relations với User (author, sharedByListUserId)
+- Thêm DataLoader pattern cho việc resolve relations
+
+### [v0.0.1] - 2026-03-23
+
+- Thêm **User Module** với entities: User, LocationUser, ExperiencesUser, EducationsUser, BadgesUser, PermissionsUser
+- Thêm **Role Module** với RoleEnum (ROOT, ADMIN, USER, GUEST, DEV)
+- Thêm **S3 Module** cho upload file lên AWS S3
+- Cấu hình TypeORM với MongoDB
+- Cấu hình GraphQL với Apollo Server
+- Thêm custom AppLogger
+- Setup CI/CD với GitHub Actions
+- Chuyển từ npm sang Bun runtime
+
+## Nguyên tắc phát triển
+
+### Đặt tên
+
+- Entity: PascalCase (VD: `User`, `Role`)
+- Type/Interface: PascalCase (VD: `UserInput`, `LocationUser`)
+- Enum values: UPPERCASE (VD: `ADMIN`, `USER`)
+- File: camelCase hoặc kebab-case (VD: `user.service.ts`, `user-module.ts`)
+
+### Validation
+
+- Sử dụng `class-validator` decorators cho Input types
+- Sử dụng `class-transformer` cho type conversion
+- Luôn đánh dấu optional fields với `@IsOptional()`
+
+### GraphQL
+
+- Sử dụng `@ObjectType()` cho response types
+- Sử dụng `@InputType()` cho mutation inputs
+- Sử dụng `@HideField()` cho sensitive data (VD: password)
+- Nullable fields: dùng `nullable: true` hoặc `?`
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED

@@ -24,6 +24,8 @@ import { DOMAIN } from '@/common/constants/common';
         autoLoadEntities: true, // Chỉ load entity của Mongo
         synchronize: true, // dev only
         keepConnectionAlive: config.NODE_ENV !== 'production',
+        retryAttempts: 5,
+        retryDelay: 5000,
       }),
     }),
     TypeOrmModule.forRootAsync({
@@ -37,7 +39,10 @@ import { DOMAIN } from '@/common/constants/common';
         autoLoadEntities: true,
         synchronize: true,
         keepConnectionAlive: config.NODE_ENV !== 'production',
+        retryAttempts: 5,
+        retryDelay: 5000,
       }),
+      
     }),
 
     // --- KẾT NỐI 2: MYSQL (SQL) ---

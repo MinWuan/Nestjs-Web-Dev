@@ -4,8 +4,8 @@ import { Role } from '../../../entity';
 @ObjectType()
 export class SubUpdatedRoleReturns {
   @Field(() => Role, { nullable: true })
-  data: Role;
+  data!: Role;
 
   @Field(() => String, { nullable: true })
-  deviceId: string;
+  deviceId!: string;
 }

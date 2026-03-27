@@ -3,7 +3,8 @@
 /node_modules
 /build
 /graphql
-
+.cursor
+.agents
 # Logs
 logs
 *.log

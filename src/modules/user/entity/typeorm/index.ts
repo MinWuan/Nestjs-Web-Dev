@@ -2,11 +2,17 @@ import {
   Entity,
   ObjectIdColumn,
   Column,
-  ObjectId,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ObjectType, Field, ID, InputType, Float, HideField } from '@nestjs/graphql';
+import {
+  ObjectType,
+  Field,
+  ID,
+  InputType,
+  Float,
+  HideField,
+} from '@nestjs/graphql';
 import {
   IsString,
   IsNotEmpty,
@@ -20,19 +26,28 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ObjectId } from 'mongodb';
 
 import { LocationUser, LocationUserInput } from './locationUser.entity';
-import { ExperiencesUser, ExperiencesUserInput } from './experiencesUser.entity';
+import {
+  ExperiencesUser,
+  ExperiencesUserInput,
+} from './experiencesUser.entity';
 import { EducationsUser, EducationsUserInput } from './educationsUser.entity';
 import { BadgesUser, BadgesUserInput } from './badgesUser.entity';
-import { PermissionsUser, PermissionsUserInput } from './permissionsUser.entity';
+import {
+  PermissionsUser,
+  PermissionsUserInput,
+} from './permissionsUser.entity';
+import { UserStatusEnum, UserMembershipTypeEnum } from './enums.user.entity';
+import { Role } from '@modules/role';
 
 @Entity('users')
 @ObjectType()
 export class User {
   @ObjectIdColumn()
   @Field(() => ID)
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Column()
   @Field(() => String, { nullable: true })
@@ -47,8 +62,9 @@ export class User {
   password?: string;
 
   @Column()
-  @Field(() => String, { nullable: true })
-  status?: string;
+  @Field(() => UserStatusEnum, { nullable: true })
+  @IsIn(Object.values(UserStatusEnum))
+  status?: UserStatusEnum;
 
   @Column()
   @Field(() => String, { nullable: true })
@@ -71,8 +87,9 @@ export class User {
   coin?: number;
 
   @Column()
-  @Field(() => String, { nullable: true })
-  membershipType?: string;
+  @Field(() => UserMembershipTypeEnum, { nullable: true })
+  @IsIn(Object.values(UserMembershipTypeEnum))
+  membershipType?: UserMembershipTypeEnum;
 
   @Column()
   @Field(() => Date, { nullable: true })
@@ -106,6 +123,13 @@ export class User {
   @Field(() => String, { nullable: true })
   id_role?: string;
 
+  @Field(() => Role, { nullable: true })
+  role?: Role;
+
+  @Column()
+  @Field(() => String, { nullable: true })
+  walletAddress?: string;
+
   @Column({ type: 'array' })
   @Field(() => [String], { nullable: 'itemsAndList' })
   listFriendId?: string[];
@@ -132,22 +156,22 @@ export class UserInput {
   @Field()
   @IsString()
   @IsNotEmpty()
-  fullname: string;
+  fullname!: string;
 
   @Field()
   @IsEmail()
   @IsNotEmpty()
-  email: string;
+  email!: string;
 
   @Field()
   @IsString()
   @IsNotEmpty()
-  password: string;
+  password!: string;
 
-  @Field({ nullable: true })
+  @Field(() => UserStatusEnum, { nullable: true })
   @IsOptional()
-  @IsString()
-  status?: string;
+  @IsIn(Object.values(UserStatusEnum))
+  status?: UserStatusEnum;
 
   @Field({ nullable: true })
   @IsOptional()
@@ -175,11 +199,10 @@ export class UserInput {
   @IsNumber()
   coin?: number;
 
-  @Field({ nullable: true })
+  @Field(() => UserMembershipTypeEnum, { nullable: true })
   @IsOptional()
-  @IsString()
-  @IsIn(['free', 'silver', 'gold', 'diamond'])
-  membershipType?: string;
+  @IsIn(Object.values(UserMembershipTypeEnum))
+  membershipType?: UserMembershipTypeEnum;
 
   @Field(() => Date, { nullable: true })
   @IsOptional()
@@ -228,6 +251,11 @@ export class UserInput {
   @IsOptional()
   @IsMongoId()
   id_role?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  walletAddress?: string;
 
   @Field(() => [String], { nullable: 'itemsAndList' })
   @IsOptional()

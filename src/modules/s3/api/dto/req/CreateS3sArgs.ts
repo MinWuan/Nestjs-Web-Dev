@@ -10,5 +10,5 @@ export class CreateS3sArgs {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateS3Args)
-  s3s: CreateS3Args[];
+  s3s!: CreateS3Args[];
 }

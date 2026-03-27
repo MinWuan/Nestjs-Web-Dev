@@ -44,7 +44,7 @@ export class UserQueryResolver {
       relations: ['role'], // nếu có các trường quan hệ thì thêm vào đây
     });
     //console.log('getUser Fields: ', selectFields);
-
+    
     const user = await this.userRepository.findById({
       _id: args._id,
       select: selectFields,

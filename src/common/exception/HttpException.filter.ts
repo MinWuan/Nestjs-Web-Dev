@@ -49,6 +49,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         errorCode = 'VALIDATION_ERROR';
         message = 'Dữ liệu đầu vào không hợp lệ';
         details = exceptionResponse.message;
+        //console.log('exceptionResponse', exceptionResponse);
       } else if (typeof exceptionResponse === 'object') {
         errorCode = exceptionResponse.error || `HTTP_ERROR_${status}`;
         message = exceptionResponse.message || exception.message;

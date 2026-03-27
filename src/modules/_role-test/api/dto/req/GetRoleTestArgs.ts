@@ -6,5 +6,5 @@ import {} from 'class-transformer';
 export class GetRoleTestArgs {
   @Field(() => String)
   @IsString()
-  _id: string;
+  _id!: string;
 }

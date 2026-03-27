@@ -1,4 +1,4 @@
-import { Entity, ObjectIdColumn, Column, ObjectId, Index } from 'typeorm';
+import { Entity, ObjectIdColumn, Column, Index } from 'typeorm';
 import {
   ObjectType,
   Field,
@@ -13,11 +13,12 @@ import {
   MaxLength,
   IsEnum,
 } from 'class-validator';
+import { ObjectId } from 'mongodb';
 
 // ---------------------------------------------------------------
 // Enum
 // ---------------------------------------------------------------
-enum RoleEnum {
+export enum RoleEnum {
   ROOT = 'ROOT',
   ADMIN = 'ADMIN',
   USER = 'USER',
@@ -36,7 +37,7 @@ registerEnumType(RoleEnum, { name: 'RoleEnum' });
 export class Role {
   @ObjectIdColumn()
   @Field(() => ID)
-  _id: ObjectId;
+  _id!: ObjectId;
 
   @Column()
   @Field(() => RoleEnum, { nullable: true })
@@ -63,7 +64,7 @@ export class RoleInput {
   @Field(() => RoleEnum)
   @IsEnum(RoleEnum)
   @IsNotEmpty()
-  role: RoleEnum;
+  role!: RoleEnum;
 
   @Field({ nullable: true })
   @IsOptional()

@@ -10,5 +10,5 @@ export class CreateRolesArgs {
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => CreateRoleArgs)
-  roles: CreateRoleArgs[];
+  roles!: CreateRoleArgs[];
 }
