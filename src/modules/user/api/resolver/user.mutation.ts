@@ -26,11 +26,11 @@ export class UserMutationResolver {
   // =================================================================
   // CREATE DEMO (Single Insert)
   // =================================================================
-  @Mutation(() => resDto.CreateUserReturns)
+  @Mutation(() => User)
   async create__User(
     @Args('input') args: argsDto.CreateUserArgs,
     @DeviceId() deviceId?: string,
-  ): Promise<resDto.CreateUserReturns> {
+  ): Promise<User> {
     const user = await this.userRepository.create(args).catch((error) => {
       throw GqlAppException.DatabaseError({
         message: 'Failed to create user',
@@ -49,11 +49,11 @@ export class UserMutationResolver {
   // =================================================================
   // UPDATE DEMO (Single Update)
   // =================================================================
-  @Mutation(() => resDto.UpdateUserReturns)
+  @Mutation(() => User)
   async update__User(
     @Args('input') args: argsDto.UpdateUserArgs,
     @DeviceId() deviceId?: string,
-  ): Promise<resDto.UpdateUserReturns> {
+  ): Promise<User> {
     const { _id, ...updateData } = args;
     const user = await this.userRepository
       .update(_id, updateData)

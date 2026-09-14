@@ -1,5 +1,5 @@
-import { Column } from 'typeorm';
-import { ObjectType, Field, InputType, Float, Int } from '@nestjs/graphql';
+import { Column, ObjectIdColumn } from 'typeorm';
+import { ObjectType, Field, InputType, Float, Int, ID } from '@nestjs/graphql';
 import {
   IsNotEmpty,
   IsOptional,
@@ -10,16 +10,22 @@ import {
   IsArray,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TotalUptimeStatus_Leaderboard_RankRecord,
-  TotalUptimeStatus_Leaderboard_RankRecordInput
- } from './totalUptimeStatus';
+import {
+  TotalUptimeStatus_Leaderboard_RankRecord,
+  TotalUptimeStatus_Leaderboard_RankRecordInput,
+} from './totalUptimeStatus';
+import { ObjectId } from 'mongodb';
 
 // ObjectType
 @ObjectType()
 export class LeaderboardRankRecord {
+  @ObjectIdColumn()
+  @Field(() => ID)
+  _id?: ObjectId;
+
   @Column()
-  @Field(() => String, { nullable: true })
-  userId?: string;
+  @Field(() => ID, { nullable: true })
+  userId?: ObjectId;
 
   @Column()
   @Field(() => Float, { nullable: true })
@@ -43,10 +49,10 @@ export class LeaderboardRankRecord {
 // InputType
 @InputType()
 export class LeaderboardRankRecordInput {
-  @Field(() => String)
+  @Field(() => ID, { nullable: true })
   @IsString()
-  @IsNotEmpty()
-  userId!: string;
+  @IsOptional()
+  userId?: ObjectId;
 
   @Field(() => Float, { nullable: true })
   @IsOptional()
@@ -58,7 +64,9 @@ export class LeaderboardRankRecordInput {
   @IsNumber()
   totalUptime?: number;
 
-  @Field(() => TotalUptimeStatus_Leaderboard_RankRecordInput, { nullable: true })
+  @Field(() => TotalUptimeStatus_Leaderboard_RankRecordInput, {
+    nullable: true,
+  })
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => TotalUptimeStatus_Leaderboard_RankRecordInput)

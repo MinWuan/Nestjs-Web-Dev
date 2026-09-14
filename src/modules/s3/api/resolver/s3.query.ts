@@ -7,7 +7,7 @@ import {
   Parent,
   Info,
 } from '@nestjs/graphql';
-import { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLResolveInfo } from 'graphql';
 import { UseGuards } from '@nestjs/common';
 
 import { GqlAppException } from '@/common/exception/GqlAppException';

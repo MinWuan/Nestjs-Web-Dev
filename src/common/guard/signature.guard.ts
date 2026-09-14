@@ -8,6 +8,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { config } from '@/config.app';
 
+
 @Injectable()
 export class SignatureGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}

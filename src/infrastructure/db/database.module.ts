@@ -42,7 +42,6 @@ import { DOMAIN } from '@/common/constants/common';
         retryAttempts: 5,
         retryDelay: 5000,
       }),
-      
     }),
 
     // --- KẾT NỐI 2: MYSQL (SQL) ---
@@ -63,14 +62,18 @@ import { DOMAIN } from '@/common/constants/common';
     //   }),
     // }),
   ],
-  providers: [RedisProvider],
-  exports: [RedisProvider],
+  providers: [
+    // RedisProvider
+  ],
+  exports: [
+    //RedisProvider
+  ],
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(
     @InjectDataSource(DOMAIN.test.name) private mongoDataSource: DataSource,
     @InjectDataSource(DOMAIN.main.name) private mongoDataSourceMain: DataSource,
-    @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
+   // @Inject('REDIS_CLIENT') private readonly redisClient: Redis,
     //@InjectDataSource(DB_MYSQL) private sqlDataSource: DataSource,
   ) {}
 
@@ -79,7 +82,7 @@ export class DatabaseModule implements OnModuleInit {
     await Promise.all([
       checkAndLogDataSource(this.mongoDataSource, DOMAIN.test.name),
       checkAndLogDataSource(this.mongoDataSourceMain, DOMAIN.main.name),
-      checkAndLogRedis(this.redisClient, 'test'),
+      //checkAndLogRedis(this.redisClient, 'test'),
       //checkAndLogDataSource(this.sqlDataSource, DB_MYSQL),
     ]);
   }

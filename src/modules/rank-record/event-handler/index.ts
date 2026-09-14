@@ -1,7 +1,9 @@
+import { ObjectId } from 'mongodb';
+
 export class MilestoneReachedEvent {
   public readonly month!: number;
   public readonly year!: number;
-  public readonly userId!: string;
+  public readonly userId!: ObjectId;
   public readonly totalUptime!: number;
   public readonly milestone!: number;
 
@@ -17,4 +19,3 @@ export const RankRecordEvent = {
     payload: MilestoneReachedEvent,
   },
 };
-

@@ -1,11 +1,13 @@
 import {
   ObjectType,
+  InputType,
   Field,
   ID,
   registerEnumType,
   Int,
   Float,
 } from '@nestjs/graphql';
+import { IsString, IsNotEmpty, IsEnum, IsInt, IsOptional } from 'class-validator';
 
 // ---------------------------------------------------------------
 // Enum
@@ -43,6 +45,27 @@ export class GrindResult {
   studyHours!: number;
 
   @Field(() => Int)
+  rank!: number;
+}
+
+@InputType()
+export class GrindResultInput implements GrindResult {
+  @Field(() => PeriodTypeEnum)
+  @IsEnum(PeriodTypeEnum)
+  periodType!: PeriodTypeEnum;
+
+  @Field(() => String)
+  @IsString()
+  @IsNotEmpty()
+  periodLabel!: string;
+
+  @Field(() => Int)
+  @IsInt()
+  studyHours!: number;
+
+  @Field(() => Int)
+  @IsInt()
+  @IsOptional()
   rank!: number;
 }
 

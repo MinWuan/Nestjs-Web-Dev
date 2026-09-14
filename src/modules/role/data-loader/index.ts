@@ -11,18 +11,16 @@ export class RoleDataLoaderService {
   public readonly roleLoader = new DataLoader<
     { id: string; select: string[] },
     Role
-  >(async (data:readonly { id: string; select: string[] }[]) => {
+  >(async (data: readonly { id: string; select: string[] }[]) => {
     const ids = data.map((k) => k.id);
     const allSelectFields = new Set<string>();
     data.forEach((k) =>
       k.select.forEach((field) => allSelectFields.add(field)),
     ); // Tập hợp tất cả các trường được yêu cầu
-
     const items = await this.roleRepository.findManyByIds({
       ids: ids,
       select: Array.from(allSelectFields),
     });
-
     const itemMap: Record<string, Role> = {};
     items.forEach((role) => {
       const key = role?._id?.toString();

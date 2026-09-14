@@ -13,7 +13,8 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAppException } from '@/common/exception/GqlAppException';
 import { SignatureGuard } from '@/common/guard/signature.guard';
 import { AppLogger } from '@/common/logger/app.logger';
-import { AuthGuard } from '@/common/guard/auth.guard';
+import { AuthAll,Auth } from '@/common/decorator/auth.decorator';
+import { AuthData } from '@/common/decorator/auth-data.decorator';
 import * as argsDto from '../dto/req';
 import * as resDto from '../dto/res';
 import { UserRepositoryTypeorm } from '../../repository';
@@ -44,7 +45,7 @@ export class UserQueryResolver {
       relations: ['role'], // nếu có các trường quan hệ thì thêm vào đây
     });
     //console.log('getUser Fields: ', selectFields);
-    
+
     const user = await this.userRepository.findById({
       _id: args._id,
       select: selectFields,
@@ -53,6 +54,40 @@ export class UserQueryResolver {
     if (!user) {
       throw GqlAppException.NotFound({
         message: `User with ID ${args._id} not found`,
+      });
+    }
+    return user;
+  }
+
+  // =================================================================
+  // GET DEMO
+  // =================================================================
+  @Query(() => User)
+  @AuthAll()
+  async getInfo__User(
+    @Args('input') args: argsDto.GetInfoUserArgs,
+    @Info() info?: GraphQLResolveInfo,
+    @AuthData() authData?: AuthPayload,
+  ): Promise<User> {
+    const selectFields = getSelectFields({
+      info,
+      relations: ['role'], // nếu có các trường quan hệ thì thêm vào đây
+    });
+    if (!authData?.user?._id) {
+      throw GqlAppException.Unauthorized({
+        message: 'Unauthorized',
+      });
+    }
+    //console.log('getUser Fields: ', selectFields);
+
+    const user = await this.userRepository.findById({
+      _id: authData?.user?._id,
+      select: selectFields,
+    });
+    //console.log('Fetched getUser: ', user);
+    if (!user) {
+      throw GqlAppException.NotFound({
+        message: `User with ID ${authData?.user?._id} not found`,
       });
     }
     return user;

@@ -9,7 +9,7 @@ import { GqlExecutionContext } from '@nestjs/graphql';
 import { JwtService } from '@nestjs/jwt';
 import { config } from '@/config.app';
 import { keyJWT, PayloadSession } from '@/common/constants/common';
-import { SessionRepositoryFacade } from '@/modules/session';
+import { SessionRepositoryFacade } from '@/modules/session/repository/typeorm';
 import { ClsService } from 'nestjs-cls';
 
 @Injectable()
@@ -51,23 +51,23 @@ export class AuthGuard implements CanActivate {
       if (!decodedToken?.session_id) {
         throw new UnauthorizedException('Token not session');
       }
-
+      //console.log('Decoded Token in AuthGuard', decodedToken);
       const session =
         await this.sessionRepositoryFacade.getSessionWithUserAndRole(
           decodedToken?.session_id,
         );
       //console.log('session', session);
 
-      if (!session) {
+      if (!session || !session?.user || !session?.user?.role) {
         throw new UnauthorizedException('Session not found');
       }
-
       const authPayload: AuthPayload = {
         user: session?.user,
         role: session?.user?.role,
       };
       // 4. QUAN TRỌNG: Gán user đã parse vào request
       // Để lát nữa Resolver có thể lấy ra dùng
+      //console.log('authPayload in AuthGuard', authPayload);
       req['auth'] = authPayload;
       this.clsService.set('auth', authPayload);
       return true;

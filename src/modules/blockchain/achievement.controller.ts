@@ -35,9 +35,9 @@ import { Transform, Type } from 'class-transformer';
 import {
   AchievementService,
   AchievementIssuedResult,
-  PeriodType,
 } from './achievement.service';
 import { AppLogger } from '@/common/logger/app.logger';
+import { PeriodTypeEnum } from '@/modules/nft-achievement/entity/typeorm';
 
 // ─── DTOs ─────────────────────────────────────────────────────────────────────
 
@@ -56,11 +56,11 @@ export class IssueGrindDto {
   @Transform(({ value }) => value?.trim().toLowerCase())
   learnerEmail!: string;
 
-  @IsEnum(PeriodType, {
+  @IsEnum(PeriodTypeEnum, {
     message: 'periodType phải là 0=DAILY 1=WEEKLY 2=MONTHLY 3=CUSTOM',
   })
   @Type(() => Number)// để đảm bảo giá trị được chuyển thành number trước khi validate enum
-  periodType!: PeriodType;
+  periodType!: PeriodTypeEnum;
 
   @IsString()
   @MaxLength(50, { message: 'periodLabel tối đa 50 ký tự' })

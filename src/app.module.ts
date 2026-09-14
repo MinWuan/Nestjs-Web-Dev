@@ -4,11 +4,13 @@ import { DatabaseModule } from '@/infrastructure/db/database.module';
 import { LoggerModule } from './common/logger/logger.module';
 import { GraphqlModule } from '@/shared/graphql/graphql.module';
 import { JwtConfigModule } from '@/common/config/jwt.config.module';
+import { GuardModule } from '@/common/guard/guard.module';
 import { ModulesModule } from '@/modules';
 import { AppController } from './app.controller';
 import { CacheModule } from '@nestjs/cache-manager';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ClsModule } from 'nestjs-cls';
+
 
 @Module({
   imports: [
@@ -48,6 +50,7 @@ import { ClsModule } from 'nestjs-cls';
     LoggerModule,
     GraphqlModule,
     JwtConfigModule,
+    GuardModule,
     ModulesModule,
   ],
   controllers: [AppController],

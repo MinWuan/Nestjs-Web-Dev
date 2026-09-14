@@ -4,7 +4,7 @@ import { config } from '@/config.app';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-@Controller('dev')
+@Controller()
 export class AppController {
   constructor(
     private readonly jwtService: JwtService,
@@ -104,6 +104,14 @@ export class AppController {
         message: "Đã xảy ra lỗi khi lấy dữ liệu cache từ cache-manager."
       };
     }
+  }
+
+  @Get('health')
+  healthCheck() {
+    return {
+      status: 'ok',
+      message: 'Service is running',
+    };
   }
 }
 

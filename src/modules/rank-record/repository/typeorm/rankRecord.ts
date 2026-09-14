@@ -428,7 +428,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
     month: number;
     year: number;
     entry: {
-      userId: string;
+      userId: ObjectId;
       totalXP?: number;
       totalUptime?: number;
       lastUptime?: Date;
@@ -450,7 +450,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
           year,
           leaderboard: [
             {
-              userId: entry.userId,
+              userId: new ObjectId(entry.userId),
               totalXP: entry.totalXP ?? 0,
               totalUptime: entry.totalUptime ?? 0,
               lastUptime: entry.lastUptime ?? new Date(),
@@ -463,7 +463,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
       } else {
         // Cập nhật leaderboard cho user
         const existingIndex = rankRecord.leaderboard?.findIndex(
-          (e) => e.userId === entry.userId,
+          (e) => e?.userId?.toString() === entry.userId?.toString(),
         );
 
         //Tìm thấy index của user trong leaderboard
@@ -478,7 +478,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
             ...leaderboardUser,
             milestonesTotalUptime:
               leaderboardUser?.milestonesTotalUptime ?? TOTAL_UPTIME_STATUS, // bắt buộc phải lấy cái cũ
-            userId: leaderboardUser?.userId,
+            userId: new ObjectId(entry.userId),
             totalXP: oldExistingXP + (entry.totalXP ?? 0),
             totalUptime: oldTotalUptime + (entry.totalUptime ?? 0),
             lastUptime: this._getLatestUptime(
@@ -498,7 +498,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
           // Không tìm thấy index của user trong leaderboard
           // Thêm entry mới
           const newEntry: LeaderboardRankRecord = {
-            userId: entry.userId,
+            userId: new ObjectId(entry.userId),
             totalXP: entry.totalXP || 0,
             totalUptime: entry.totalUptime || 0,
             lastUptime: entry.lastUptime || new Date(),
@@ -538,7 +538,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
   private _publishEventTotalUptimeChange(data: {
     month: number;
     year: number;
-    userId: string;
+    userId: ObjectId;
     totalUptime: number;
     milestonesTotalUptime: TotalUptimeStatus_Leaderboard_RankRecord[];
   }): void {
@@ -568,7 +568,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
           new RankRecordEvent.milestoneReached.payload({
             month: data.month,
             year: data.year,
-            userId: data.userId,
+            userId: new ObjectId(data.userId),
             totalUptime: data.totalUptime,
             milestone: highestMilestone.milestone,
           }),
@@ -578,7 +578,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
         this.updateOneMilestonesTotalUptime({
           month: data.month,
           year: data.year,
-          userId: data.userId,
+          userId: new ObjectId(data.userId),
           milestone: highestMilestone.milestone,
           newStatus: TotalUptimeStatusEnum.PENDING,
         });
@@ -605,7 +605,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
   async updateOneMilestonesTotalUptime(data: {
     month: number;
     year: number;
-    userId: string;
+    userId:  ObjectId;
     milestone: number;
     newStatus: TotalUptimeStatusEnum
   }): Promise<TotalUptimeStatus_Leaderboard_RankRecord[] | undefined> {
@@ -618,7 +618,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
         return undefined;
       }
       const existingUserIndex = rankRecord.leaderboard?.findIndex(
-        (e) => e?.userId === data?.userId,
+        (e) => e?.userId?.toString() === data?.userId?.toString(),
       );
       //Không tìm thấy index của user trong leaderboard
       if (existingUserIndex === undefined || existingUserIndex < 0) {

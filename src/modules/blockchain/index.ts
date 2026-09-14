@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AchievementService } from './achievement.service';
-import { AchievementUseCase } from './use-case';
+import { BlockchainEventHandler } from './event-handler/blockchain.event';
 import { DolphintutorAchievementController } from './achievement.controller';
 import { BlockchainMutationResolver } from './api/resolver/blockchain.mutation';
 import { BlockchainFieldResolver } from './api/resolver/blockchain.field';
 import { UserModule } from '@/modules/user';
 import { IssueGrindCompletedEvent } from './event-handler';
+import * as entity from './entity';
 
-export { AchievementService,IssueGrindCompletedEvent };
+export { AchievementService, IssueGrindCompletedEvent, entity };
 
 // ─── Module ──────────────────────────────────────────────────────────────────
 
@@ -15,7 +16,8 @@ export { AchievementService,IssueGrindCompletedEvent };
   imports: [UserModule],
   providers: [
     AchievementService,
-    AchievementUseCase,
+    //Event Handlers
+    BlockchainEventHandler,
     // GraphQL Resolvers
     BlockchainMutationResolver,
     BlockchainFieldResolver,

@@ -45,10 +45,10 @@ export class UserRepositoryFacade {
   }
 
   //Tìm user bằng id
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string | ObjectId): Promise<User | null> {
     const results = await this.repo.findOne({ 
       where: {
-        _id: new ObjectId(id),
+        _id: typeof id === 'string' ? new ObjectId(id) : id,
       },
      });
     return results;

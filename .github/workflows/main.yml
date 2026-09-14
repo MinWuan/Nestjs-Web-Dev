@@ -133,7 +133,7 @@ jobs:
               --detach=true \
               $SERVICE_NAME
 
-            echo ">>>>> 🏥 VERIFYING DEPLOYMENT STATUS (Timeout: 60s) <<<<<"
+            echo ">>>>> 🏥 VERIFYING DEPLOYMENT STATUS (Timeout: 30s) <<<<<"
             MAX_RETRIES=10 # 10 lần * 3 giây = 30 giây
             COUNTER=0
             SUCCESS=false
@@ -148,7 +148,6 @@ jobs:
                 break
               fi
               
-              # Nếu thấy trạng thái bị Rollback hoặc đứng im quá lâu, có thể check ps
               sleep 3
               let COUNTER=COUNTER+1
             done

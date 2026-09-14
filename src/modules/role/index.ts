@@ -13,7 +13,6 @@ import { RoleSubscriptionResolver } from './api/resolver/role.subscription';
 import { RoleFieldResolver } from './api/resolver/role.field';
 
 import { RoleDataLoaderService } from './data-loader';
-import { RoleUseCaseModule } from './use-case';
 
 export { RoleRepositoryFacade, RoleDataLoaderService, Role };
 
@@ -32,7 +31,6 @@ export { RoleRepositoryFacade, RoleDataLoaderService, Role };
     RoleFieldResolver,
 
     //Use Cases
-    RoleUseCaseModule,
 
     //DataLoader của các module khác có thể được inject vào đây
     RoleDataLoaderService,

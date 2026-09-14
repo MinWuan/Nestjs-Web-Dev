@@ -1,6 +1,6 @@
-
+import { ObjectId } from 'mongodb';
 
 export interface findById {
-  _id: string;
+  _id: string | ObjectId;
   select?: string[];
 }

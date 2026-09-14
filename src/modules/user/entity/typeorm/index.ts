@@ -63,6 +63,7 @@ export class User {
 
   @Column()
   @Field(() => UserStatusEnum, { nullable: true })
+  @IsOptional()//@IsIn() không tự động cho phép null. Nếu không có @IsOptional() đứng trước, class-validator sẽ validate giá trị null với @IsIn([...]) → thất bại ngay lập tức, vì null không nằm trong danh sách enum.
   @IsIn(Object.values(UserStatusEnum))
   status?: UserStatusEnum;
 
@@ -88,6 +89,7 @@ export class User {
 
   @Column()
   @Field(() => UserMembershipTypeEnum, { nullable: true })
+  @IsOptional()//@IsIn() không tự động cho phép null. Nếu không có @IsOptional() đứng trước, class-validator sẽ validate giá trị null với @IsIn([...]) → thất bại ngay lập tức, vì null không nằm trong danh sách enum.
   @IsIn(Object.values(UserMembershipTypeEnum))
   membershipType?: UserMembershipTypeEnum;
 
@@ -124,7 +126,7 @@ export class User {
   id_role?: string;
 
   @Field(() => Role, { nullable: true })
-  role?: Role;
+  role?: Role | null
 
   @Column()
   @Field(() => String, { nullable: true })

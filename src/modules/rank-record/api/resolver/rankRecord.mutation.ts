@@ -18,6 +18,8 @@ import { RankRecordSubscriptionResolver } from './rankRecord.subscription';
 import { GqlAppException } from '@/common/exception/GqlAppException';
 import { AppLogger } from '@/common/logger/app.logger';
 import { SignatureGuard } from '@/common/guard/signature.guard';
+import { AuthAll } from '@/common/decorator/auth.decorator';
+import { AuthData } from '@/common/decorator/auth-data.decorator';
 
 @Resolver((of) => RankRecord)
 @UseGuards(SignatureGuard)
@@ -33,11 +35,11 @@ export class RankRecordMutationResolver {
   // =================================================================
   // CREATE DEMO (Single Insert)
   // =================================================================
-  @Mutation(() => resDto.CreateRankRecordReturns)
+  @Mutation(() => RankRecord)
   async create__RankRecord(
     @Args('input') args: argsDto.CreateRankRecordArgs,
     @DeviceId() deviceId?: string,
-  ): Promise<resDto.CreateRankRecordReturns> {
+  ): Promise<RankRecord> {
     const rankRecord = await this.rankRecordRepository
       .create(args)
       .catch((error) => {
@@ -58,11 +60,11 @@ export class RankRecordMutationResolver {
   // =================================================================
   // UPDATE DEMO (Single Update)
   // =================================================================
-  @Mutation(() => resDto.UpdateRankRecordReturns)
+  @Mutation(() => RankRecord)
   async update__RankRecord(
     @Args('input') args: argsDto.UpdateRankRecordArgs,
     @DeviceId() deviceId?: string,
-  ): Promise<resDto.UpdateRankRecordReturns> {
+  ): Promise<RankRecord> {
     const { _id, ...updateData } = args;
     const rankRecord = await this.rankRecordRepository
       .update(_id, updateData)
@@ -185,16 +187,28 @@ export class RankRecordMutationResolver {
   // =================================================================
   // UPSERT LEADERBOARD ENTRY (thêm/cập nhật entry vào leaderboard)
   // =================================================================
-  @Mutation(() => resDto.UpsertLeaderboardEntryReturns)
+  @Mutation(() => RankRecord)
+  @AuthAll()
   async upsertLeaderboardEntry__RankRecord(
     @Args('input') args: argsDto.UpsertLeaderboardEntryArgs,
     @DeviceId() deviceId?: string,
-  ): Promise<resDto.UpsertLeaderboardEntryReturns> {
+    @AuthData() authData?: AuthPayload,
+  ): Promise<RankRecord> {  
+
+    if(!authData?.user?._id) {  
+      throw GqlAppException.Unauthorized({
+        message: 'Unauthorized',
+      });
+    }
+
     const rankRecord = await this.rankRecordRepository
       .upsertLeaderboardEntry({
         month: args.month,
         year: args.year,
-        entry: args.entry,
+        entry: {
+          ...args.entry,
+          userId: args?.entry?.userId || authData?.user?._id,
+        },
       })
       .catch((error) => {
         throw GqlAppException.DatabaseError({

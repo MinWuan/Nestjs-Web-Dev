@@ -16,7 +16,7 @@ import {
   IsEmail,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { User } from '@/modules/user';
+import { User } from '@/modules/user/entity';
 
 // @Index(['session_id'], { unique: true })
 // @Index(['id_user'])

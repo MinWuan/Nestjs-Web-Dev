@@ -3,8 +3,8 @@ import { GraphQLResolveInfo } from 'graphql';
 import { getSelectFields } from '@/shared/utils/graphql.util';
 import { AppLogger } from '@/common/logger/app.logger';
 import { Session } from '../../entity';
-import { User } from '@/modules/user';
-import { UserDataLoaderService } from '@/modules/user';
+import { User } from '@/modules/user/entity';
+import { UserDataLoaderService } from '@/modules/user/data-loader';
 
 @Resolver((of) => Session)
 export class SessionFieldResolver {

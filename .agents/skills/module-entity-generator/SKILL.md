@@ -29,7 +29,7 @@ Khi người dùng yêu cầu tạo mới hoặc viết một entity/module theo
 - Mở file entity vừa được clone tại `src/modules/<tên-module>/entity/typeorm/index.ts`.
 - **Xoá sạch dữ liệu mẫu** trong file này.
 - Viết entity mới theo đúng định nghĩa yêu cầu của người dùng.
-- **QUAN TRỌNG:** Phải tuân thủ nghiêm ngặt theo các quy tắc trong SKILL tại file `entity-generator.md`.
+- **QUAN TRỌNG:** Phải tuân thủ nghiêm ngặt theo các quy tắc trong SKILL tại file `./entity-generator.md` cùng cấp thư mục chứa skill này.
 
 ## 4. Xử lý Quan hệ (Relations) với Module khác
 Nếu yêu cầu có đề cập đến việc module mới có quan hệ với module khác hiện có:

@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PubSub } from 'graphql-subscriptions';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DOMAIN } from '@/common/constants/common';
 
 import { Session } from './entity';
+import { UserModule } from '@/modules/user';
 
 import { SessionRepositoryTypeorm } from './repository';
 import { SessionRepositoryFacade } from './repository/typeorm/facade';
@@ -15,14 +16,13 @@ import { SessionFieldResolver } from './api/resolver/session.field';
 import { SessionDataLoaderService } from './data-loader';
 import { SessionUseCaseModule } from './use-case';
 
-import { UserModule } from '@/modules/user';
-
 export { SessionRepositoryFacade, SessionDataLoaderService, Session };
+
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Session], DOMAIN.main.name),
-    UserModule,
+    forwardRef(() => UserModule),
   ],
   controllers: [],
   providers: [

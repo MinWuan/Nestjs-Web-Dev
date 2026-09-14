@@ -11,6 +11,7 @@ import {
   IsNotEmpty,
   IsOptional,
   MaxLength,
+  IsIn,
   IsEnum,
 } from 'class-validator';
 import { ObjectId } from 'mongodb';
@@ -41,6 +42,8 @@ export class Role {
 
   @Column()
   @Field(() => RoleEnum, { nullable: true })
+  @IsOptional()
+  @IsEnum(RoleEnum)
   role?: RoleEnum;
 
   @Column({ type: 'text' })

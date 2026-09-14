@@ -10,28 +10,17 @@ import {
 } from 'ethers';
 import { AppLogger } from '@/common/logger/app.logger';
 import { config } from '@/config.app';
-
+import {CertTypeEnum,PeriodTypeEnum} from '@/modules/nft-achievement/entity/index';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export enum CertType {
-  THE_GRIND = 0,
-  UNBROKEN = 1,
-  VOYAGE_COMPLETE = 2,
-}
 
-export enum PeriodType {
-  DAILY = 0,
-  WEEKLY = 1,
-  MONTHLY = 2,
-  CUSTOM = 3,
-}
 
 /** Kết quả đầy đủ trả về sau mỗi lần cấp chứng nhận */
 export interface AchievementIssuedResult {
   // ── On-chain identifiers ──
   tokenId: string; // Token ID dạng string (bigint safe)
   certId: string; // VD: "DT-GRND-00001"
-  certType: CertType;
+  certType: CertTypeEnum;
   certTypeName: string; // "The Grind" | "Unbroken" | "Voyage Complete"
 
   // ── Learner ──
@@ -64,7 +53,7 @@ export interface AchievementIssuedResult {
 }
 
 export interface GrindResult {
-  periodType: PeriodType;
+  periodType: PeriodTypeEnum;
   periodLabel: string;
   studyHours: number;
   rank: number; // 0 = không có rank
@@ -86,7 +75,7 @@ export interface IssueGrindInput {
   learnerAddress: string;
   learnerName: string;
   learnerEmail: string;
-  periodType: PeriodType;
+  periodType: PeriodTypeEnum;
   periodLabel: string; // VD: "Tháng 03/2026"
   studyHours: number;
   rank?: number; // optional, default 0
@@ -179,10 +168,10 @@ const ABI = [
   },
 ];
 
-const CERT_TYPE_NAMES: Record<CertType, string> = {
-  [CertType.THE_GRIND]: 'The Grind',
-  [CertType.UNBROKEN]: 'Unbroken',
-  [CertType.VOYAGE_COMPLETE]: 'Voyage Complete',
+const CERT_TYPE_NAMES: Record<CertTypeEnum, string> = {
+  [CertTypeEnum.THE_GRIND]: 'The Grind',
+  [CertTypeEnum.UNBROKEN]: 'Unbroken',
+  [CertTypeEnum.VOYAGE_COMPLETE]: 'Voyage Complete',
 };
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -261,8 +250,8 @@ export class AchievementService implements OnModuleInit {
         input.learnerName,
         input.learnerEmail,
       ),
-      certType: CertType.THE_GRIND,
-      certTypeName: CERT_TYPE_NAMES[CertType.THE_GRIND],
+      certType: CertTypeEnum.THE_GRIND,
+      certTypeName: CERT_TYPE_NAMES[CertTypeEnum.THE_GRIND],
       grind: {
         periodType: input.periodType,
         periodLabel: input.periodLabel,
@@ -309,8 +298,8 @@ export class AchievementService implements OnModuleInit {
         input.learnerName,
         input.learnerEmail,
       ),
-      certType: CertType.UNBROKEN,
-      certTypeName: CERT_TYPE_NAMES[CertType.UNBROKEN],
+      certType: CertTypeEnum.UNBROKEN,
+      certTypeName: CERT_TYPE_NAMES[CertTypeEnum.UNBROKEN],
       unbroken: {
         startDate: new Date(startTs * 1000),
         endDate: new Date(endTs * 1000),
@@ -354,8 +343,8 @@ export class AchievementService implements OnModuleInit {
         input.learnerName,
         input.learnerEmail,
       ),
-      certType: CertType.VOYAGE_COMPLETE,
-      certTypeName: CERT_TYPE_NAMES[CertType.VOYAGE_COMPLETE],
+      certType: CertTypeEnum.VOYAGE_COMPLETE,
+      certTypeName: CERT_TYPE_NAMES[CertTypeEnum.VOYAGE_COMPLETE],
       voyage: {
         courseName: input.courseName,
         completedAt: new Date(completedTs * 1000),

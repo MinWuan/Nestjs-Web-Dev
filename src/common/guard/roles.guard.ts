@@ -14,15 +14,16 @@ import {
   ROLE_ALL,
 } from '@/common/decorator/roles.decorator';
 
-
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
     const ctx = GqlExecutionContext.create(context);
-    const authPayload: AuthPayload = ctx.getContext().req['auth'];
+    const { req } = ctx.getContext();
+    const authPayload = req?.auth; // Lấy thông tin auth đã được gán bởi AuthGuard
 
+    //console.log('authPayload in RolesGuard', authPayload);
     // Nếu chưa login hoặc không có roles -> Chặn luôn
     if (!authPayload?.role) {
       throw new InternalServerErrorException('Failed to authenticate');
@@ -39,8 +40,8 @@ export class RolesGuard implements CanActivate {
 
     if (excludedRoles && excludedRoles.length > 0) {
       // Kiểm tra xem user có dính role nào bị cấm không
-      const isBanned = excludedRoles.some((bannedRole) =>
-        nameRole === bannedRole.toUpperCase(),
+      const isBanned = excludedRoles.some(
+        (bannedRole) => nameRole === bannedRole.toUpperCase(),
       );
       if (isBanned) {
         throw new ForbiddenException(
@@ -71,7 +72,9 @@ export class RolesGuard implements CanActivate {
     }
 
     // CASE: Check whitelist (Logic cũ)
-    const hasRole = requiredRoles.some((role) => nameRole === role.toUpperCase());
+    const hasRole = requiredRoles.some(
+      (role) => nameRole === role.toUpperCase(),
+    );
     if (!hasRole) {
       throw new ForbiddenException(
         `You are required to have one of the following roles: ${requiredRoles.join(', ')}`,

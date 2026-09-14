@@ -15,7 +15,7 @@ export class AuthMutationResolver {
   ) {}
 
   @Mutation(() => resDto.AuthResult)
-  async login(
+  async login__Auth(
     @Args('input') args: argsDto.LoginArgs,
   ): Promise<resDto.AuthResult> {
     const result = await this.loginUseCase.execute(args).catch((error) => {

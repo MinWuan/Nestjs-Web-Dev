@@ -105,11 +105,6 @@
     "@swc/core-linux-x64-gnu": "1.15.4",
     "@swc/core-linux-x64-musl": "1.15.4"
   },
-  "overrides": {
-    "@apollo/server-plugin-landing-page-graphql-playground": {
-      "@apollo/server": "5.2.0"
-    }
-  },
   "resolutions": {
     "@apollo/server": "5.2.0"
   },

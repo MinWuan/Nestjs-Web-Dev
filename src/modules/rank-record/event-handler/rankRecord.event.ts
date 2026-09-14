@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { RankRecordRepositoryTypeorm } from '../repository';
+import { RankRecordRepositoryTypeorm } from '../repository/typeorm/rankRecord';
 import { AppLogger } from '@/common/logger/app.logger';
 import {
   BlockchainEvent,
@@ -12,7 +12,9 @@ export class RankRecordEventHandler {
   constructor(
     private readonly rankRecordRepository: RankRecordRepositoryTypeorm,
     private readonly logger: AppLogger,
-  ) {}
+  ) {
+    this.logger.log(`(﹙˓ ‍🎧 ˒﹚) RankRecordEventHandler initialized`);
+  }
 
   @OnEvent(BlockchainEvent.issueGrindCompleted.name, { async: true })
   async handleIssueGrindCompleted(payload: IssueGrindCompletedEvent) {

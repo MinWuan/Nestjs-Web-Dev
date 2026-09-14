@@ -33,25 +33,25 @@ services:
         max_attempts: 3
         window: 60s # Chỉ tính là restart loop nếu nó chết liên tục trong 120s
 
-      labels:
-        # 1. Kích hoạt Traefik
-        - "traefik.enable=true"
+      # labels:
+      #   # 1. Kích hoạt Traefik
+      #   - "traefik.enable=true"
         
-        # 2. Định tuyến Domain và Path
-        - "traefik.http.routers.nestjs-router.rule=Host(`api.minwandev.io.vn`) && (PathPrefix(`/api/v2`) || PathPrefix(`/graphql`))"
-        - "traefik.http.routers.nestjs-router.entrypoints=websecure"
-        - "traefik.http.routers.nestjs-router.tls=true"
-        - "traefik.http.routers.nestjs-router.service=nestjs-service" # Đặt tên service rõ ràng
+      #   # 2. Định tuyến Domain và Path
+      #   - "traefik.http.routers.nestjs-router.rule=Host(`api.minwandev.io.vn`) && (PathPrefix(`/api/v2`) || PathPrefix(`/graphql`))"
+      #   - "traefik.http.routers.nestjs-router.entrypoints=websecure"
+      #   - "traefik.http.routers.nestjs-router.tls=true"
+      #   - "traefik.http.routers.nestjs-router.service=nestjs-service" # Đặt tên service rõ ràng
         
-        # 3. CHỮA LỖI 504
-        # Nếu không có dòng này, Traefik sẽ chọc vào port 80 và
-        # gây lỗi Timeout
-        - "traefik.http.services.nestjs-service.loadbalancer.server.port=3001"
+      #   # 3. CHỮA LỖI 504
+      #   # Nếu không có dòng này, Traefik sẽ chọc vào port 80 và
+      #   # gây lỗi Timeout
+      #   - "traefik.http.services.nestjs-service.loadbalancer.server.port=3001"
 
-        # 4. Chỉ định mạng (Phòng trường hợp stack nối nhiều mạng)
-        - "traefik.docker.network=traefik-swarm"
-        # 5. Middleware (Tùy chọn - Dùng lại cái trong dynamic_conf)
-        - "traefik.http.routers.nestjs-router.middlewares=secure-headers@file,common-compress@file"
+      #   # 4. Chỉ định mạng (Phòng trường hợp stack nối nhiều mạng)
+      #   - "traefik.docker.network=traefik-swarm"
+      #   # 5. Middleware (Tùy chọn - Dùng lại cái trong dynamic_conf)
+      #   - "traefik.http.routers.nestjs-router.middlewares=secure-headers@file,common-compress@file"
          
 
 # Khai báo mạng đã tạo ở bước trước (external: true nghĩa là mạng đã có sẵn)

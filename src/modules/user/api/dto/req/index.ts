@@ -9,13 +9,14 @@ import { DeleteUsersArgs } from './DeleteUsersArgs';
 import { SubCreatedUserArgs } from './SubCreatedUserArgs';
 import { SubUpdatedUserArgs } from './SubUpdatedUserArgs';
 import { SubDeletedUserArgs } from './SubDeletedUserArgs';
-
+import { GetInfoUserArgs } from './GetInfoUserArgs';
 
 export {
   CreateUserArgs,
   UpdateUserArgs,
   DeleteUserArgs,
   GetUserArgs,
+  GetInfoUserArgs,
   GetUsersArgs,
   CreateUsersArgs,
   UpdateUsersArgs,

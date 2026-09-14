@@ -8,7 +8,8 @@ import { AppLogger } from '@/common/logger/app.logger';
 
 @Resolver((of) => User) //để khai báo resolver cho User schema
 export class UserFieldResolver {
-  constructor(private roleDataLoader: RoleDataLoaderService,
+  constructor(
+    private roleDataLoader: RoleDataLoaderService,
     private logger: AppLogger,
   ) {
     this.logger.setPrefix('UserFieldResolver');
