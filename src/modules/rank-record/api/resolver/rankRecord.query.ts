@@ -13,7 +13,8 @@ import { UseGuards } from '@nestjs/common';
 import { GqlAppException } from '@/common/exception/GqlAppException';
 import { SignatureGuard } from '@/common/guard/signature.guard';
 import { AppLogger } from '@/common/logger/app.logger';
-import { AuthGuard } from '@/common/guard/auth.guard';
+import { AuthAll,Auth } from '@/common/decorator/auth.decorator';
+import { AuthData } from '@/common/decorator/auth-data.decorator';
 import * as argsDto from '../dto/req';
 import * as resDto from '../dto/res';
 import { RankRecordRepositoryTypeorm } from '../../repository';
@@ -86,5 +87,48 @@ export class RankRecordQueryResolver {
     });
     //console.log('Fetched rankRecord', data);
     return data;
+  }
+
+  // =================================================================
+  // GET LEADERBOARD
+  // =================================================================
+  @Query(() => resDto.GetLeaderboardReturns)
+  @AuthAll()
+  async getLeaderboard__RankRecord(
+    @Args('input') args: argsDto.GetLeaderboardArgs,
+    @Info() info?: GraphQLResolveInfo,
+    @AuthData() authData?: AuthPayload,
+  ): Promise<resDto.GetLeaderboardReturns> {
+    const selectFields = getSelectFields({
+      info,
+      path: 'data', // vì data là mảng con trả về
+      relations: ['leaderboard.user'], // nếu có các trường quan hệ thì thêm vào đây
+    });
+    const month = args.month ?? new Date().getMonth() + 1;
+    const year = args.year ?? new Date().getFullYear();
+    const userId = authData?.user?._id?.toString() ?? '';
+    if (!userId) {
+      throw GqlAppException.Unauthorized({
+        message: 'User not found',
+      });
+    }
+    const leaderboard = await this.rankRecordRepository.findLeaderboardByUserId(
+      {
+        userId: userId,
+        month: month,
+        year: year,
+        select: selectFields,
+      },
+    );
+
+    if (!leaderboard) {
+      throw GqlAppException.NotFound({
+        message: `Leaderboard with user ID ${userId} not found`,
+      });
+    }
+
+    return {
+      data: leaderboard,
+    };
   }
 }

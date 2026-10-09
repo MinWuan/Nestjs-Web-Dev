@@ -250,6 +250,70 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
   }
 
   // =================================================================
+  // FIND LEADERBOARD BY USER ID
+  // =================================================================
+  async findLeaderboardByUserId(data: {
+    userId: string;
+    month: number;
+    year: number;
+    select?: string[];
+  }): Promise<RankRecord | null> {
+    try {
+      const { userId, month, year, select } = data;
+
+      const projection = select?.length
+        ? (select as (keyof RankRecord)[])
+        : undefined;
+
+      // Chuyển userId từ string sang ObjectId để truy vấn trong mảng leaderboard
+      const objectUserId = new ObjectId(userId);
+
+      // Xây dựng điều kiện where:
+      // - Bắt buộc: leaderboard chứa userId
+      // - Tùy chọn: month + year nếu có
+      const where: any = {
+        'leaderboard.userId': objectUserId,
+      };
+
+      if (month !== undefined && month !== null) {
+        where.month = month;
+      }
+      if (year !== undefined && year !== null) {
+        where.year = year;
+      }
+
+      // Tìm RankRecord phù hợp
+      // - Nếu truyền month/year: tìm chính xác 1 bản ghi
+      // - Nếu không truyền: lấy bản ghi mới nhất theo updatedAt
+      const rankRecord = await this.repo.findOne({
+        where: where,
+        order: {
+          updatedAt: -1, // Lấy bản ghi leaderboard mới nhất khi không truyền month/year
+        },
+        select: projection,
+      });
+
+      // Không tìm thấy RankRecord nào chứa user
+      if (!rankRecord) {
+        return null;
+      }
+
+      // Tìm entry của user trong mảng leaderboard
+      // const userEntry = rankRecord.leaderboard?.find(
+      //   (entry) => entry?.userId?.toString() === objectUserId.toString(),
+      // );
+
+      return rankRecord ?? null;
+    } catch (error) {
+      this.logger.error({
+        message: `🔴 find leaderboard by user id`,
+        trace: error,
+      });
+      throw error;
+    }
+  }
+
+  // =================================================================
   // FIND ALL
   // =================================================================
   async findAll(queryDto: input.findAll): Promise<{
@@ -573,7 +637,9 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
             milestone: highestMilestone.milestone,
           }),
         );
-        this.logger.log(`🔔 Người dùng ${data.userId} đã đạt được cột mốc mới ${highestMilestone.milestone}h`);
+        this.logger.log(
+          `🔔 Người dùng ${data.userId} đã đạt được cột mốc mới ${highestMilestone.milestone}h`,
+        );
 
         this.updateOneMilestonesTotalUptime({
           month: data.month,
@@ -605,9 +671,9 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
   async updateOneMilestonesTotalUptime(data: {
     month: number;
     year: number;
-    userId:  ObjectId;
+    userId: ObjectId;
     milestone: number;
-    newStatus: TotalUptimeStatusEnum
+    newStatus: TotalUptimeStatusEnum;
   }): Promise<TotalUptimeStatus_Leaderboard_RankRecord[] | undefined> {
     try {
       let rankRecord = await this.repo.findOne({
@@ -631,7 +697,7 @@ export class RankRecordRepositoryTypeorm implements RankRecordRepository {
       }
 
       rankRecord.leaderboard[existingUserIndex].milestonesTotalUptime =
-        rankRecord.leaderboard[existingUserIndex].milestonesTotalUptime.map(
+        rankRecord.leaderboard[existingUserIndex].milestonesTotalUptime?.map(
           (column) => {
             if (column.milestone === data.milestone) {
               return {

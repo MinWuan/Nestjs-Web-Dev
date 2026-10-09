@@ -19,8 +19,8 @@ import { ObjectId } from 'mongodb';
 // ObjectType
 @ObjectType()
 export class LeaderboardRankRecord {
-  @ObjectIdColumn()
-  @Field(() => ID)
+  @ObjectIdColumn({ nullable: true })
+  @Field(() => ID, { nullable: true })
   _id?: ObjectId;
 
   @Column()
@@ -36,10 +36,12 @@ export class LeaderboardRankRecord {
   totalUptime?: number;
 
   @Column()
-  @Field(() => TotalUptimeStatus_Leaderboard_RankRecord, { nullable: true })
-  @ValidateNested({ each: true })
+  @Field(() => [TotalUptimeStatus_Leaderboard_RankRecord], {
+    nullable: 'itemsAndList',
+  })
+  @ValidateNested({ each: true }) // validate nested array
   @Type(() => TotalUptimeStatus_Leaderboard_RankRecord)
-  milestonesTotalUptime!: TotalUptimeStatus_Leaderboard_RankRecord[];
+  milestonesTotalUptime?: TotalUptimeStatus_Leaderboard_RankRecord[];
 
   @Column()
   @Field(() => Date, { nullable: true })
@@ -64,13 +66,14 @@ export class LeaderboardRankRecordInput {
   @IsNumber()
   totalUptime?: number;
 
-  @Field(() => TotalUptimeStatus_Leaderboard_RankRecordInput, {
-    nullable: true,
+  @Field(() => [TotalUptimeStatus_Leaderboard_RankRecordInput], {
+    nullable: 'itemsAndList',
   })
   @IsOptional()
-  @ValidateNested({ each: true })
+  @IsArray()
+  @ValidateNested({ each: true }) // validate nested array
   @Type(() => TotalUptimeStatus_Leaderboard_RankRecordInput)
-  milestonesTotalUptime!: TotalUptimeStatus_Leaderboard_RankRecordInput[];
+  milestonesTotalUptime?: TotalUptimeStatus_Leaderboard_RankRecordInput[];
 
   @Field(() => Date, { nullable: true })
   @IsOptional()

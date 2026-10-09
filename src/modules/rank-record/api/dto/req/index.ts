@@ -3,6 +3,7 @@ import { UpdateRankRecordArgs } from './UpdateRankRecordArgs';
 import { DeleteRankRecordArgs } from './DeleteRankRecordArgs';
 import { GetRankRecordArgs } from './GetRankRecordArgs';
 import { GetRankRecordsArgs } from './GetRankRecordsArgs';
+import { GetLeaderboardArgs } from './GetLeaderboardArgs';
 import { CreateRankRecordsArgs } from './CreateRankRecordsArgs';
 import { UpdateRankRecordsArgs } from './UpdateRankRecordsArgs';
 import { DeleteRankRecordsArgs } from './DeleteRankRecordsArgs';
@@ -18,6 +19,7 @@ export {
   DeleteRankRecordArgs,
   GetRankRecordArgs,
   GetRankRecordsArgs,
+  GetLeaderboardArgs,
   CreateRankRecordsArgs,
   UpdateRankRecordsArgs,
   DeleteRankRecordsArgs,

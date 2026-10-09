@@ -18,6 +18,7 @@ export class AppController {
       throw new UnauthorizedException('Not allowed in production');
     }
 
+    
     const payload = {
       // Dữ liệu tuỳ chỉnh nếu cần
     };
@@ -27,7 +28,7 @@ export class AppController {
       //audience: 'server',
       //issuer: 'client',
       //subject: 'signature',
-      expiresIn: '1d', // Thời gian tồn tại của chữ ký
+      expiresIn: '365d', // Thời gian tồn tại của chữ ký
     });
 
     return { 

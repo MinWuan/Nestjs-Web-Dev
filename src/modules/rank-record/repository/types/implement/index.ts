@@ -1,7 +1,7 @@
 
 
 import { SaveOptions, UpdateOptions, DeleteOptions } from 'typeorm';
-import { RankRecord } from '../../../entity';
+import { LeaderboardRankRecord, RankRecord } from '../../../entity';
 import * as input from '../input';
 
 export interface RankRecordRepository {
@@ -43,4 +43,10 @@ export interface RankRecordRepository {
     ids: string[];
     select?: string[];
   }): Promise<RankRecord[]>;
+  findLeaderboardByUserId(data: {
+    userId: string;
+    month: number;
+    year: number;
+    select?: string[];
+  }): Promise<RankRecord | null>;
 }

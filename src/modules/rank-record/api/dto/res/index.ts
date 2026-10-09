@@ -1,4 +1,5 @@
 import { GetRankRecordsReturns } from './GetRankRecordsReturns';
+import { GetLeaderboardReturns } from './GetLeaderboardReturns';
 import { CreateRankRecordReturns } from './CreateRankRecordReturns';
 import { UpdateRankRecordReturns } from './UpdateRankRecordReturns';
 import { DeleteRankRecordReturns } from './DeleteRankRecordReturns';
@@ -16,6 +17,7 @@ import { UpsertLeaderboardEntryReturns } from './UpsertLeaderboardEntryReturns';
 
 export {
   GetRankRecordsReturns,
+  GetLeaderboardReturns,
   CreateRankRecordReturns,
   UpdateRankRecordReturns,
   DeleteRankRecordReturns,
