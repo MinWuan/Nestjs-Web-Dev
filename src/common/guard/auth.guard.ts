@@ -56,7 +56,7 @@ export class AuthGuard implements CanActivate {
         await this.sessionRepositoryFacade.getSessionWithUserAndRole(
           decodedToken?.session_id,
         );
-      //console.log('session', session);
+      //console.log('(dev) session:', session);
 
       if (!session || !session?.user || !session?.user?.role) {
         throw new UnauthorizedException('Session not found');
